@@ -7,10 +7,10 @@ Jump to the [website](https://anikifoss.github.io/vibe-games-oss/) to play the g
 ## Rules
 
 All the games and demos adhere to the following rules:
-- single html page
+- Single html page
 - JavaScript
-- no external dependencies
-- no external assets
+- No external dependencies
+- No external assets
 
 ## Remixing
 
@@ -27,4 +27,4 @@ The idea is that anyone, even without technical background, should be able to re
 - Start from the beginning of this recipe, but this time use a copy of your new code!
 
 ## Share Your Remixes!
-Open a PR here, or publish it on your page. It's FOSS, so make sure to keep the license link in your copy so other can remix as well.
+Open a PR here, or publish it on your page. It's FOSS, so make sure to keep the license link in your copy so other can remix it as well.
