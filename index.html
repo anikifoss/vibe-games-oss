@@ -114,12 +114,21 @@
 
         .game-image {
             height: 200px;
-            background: linear-gradient(45deg, #240046, #3c096c);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
+            background: linear-gradient(45deg, #240046, #3c096c);
+        }
+
+        .game-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: relative;
+            z-index: 2;
+            animation: arcadeGlitch 8s infinite ease-in-out;
         }
 
         .game-image::before {
@@ -129,6 +138,7 @@
             height: 150%;
             background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
             animation: pulse 10s infinite linear;
+            z-index: 1;
         }
 
         @keyframes pulse {
@@ -136,19 +146,23 @@
             100% { transform: rotate(360deg) translate(0, 0); }
         }
 
-        .pixel {
-            width: 20px;
-            height: 20px;
-            background: var(--primary);
-            box-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary);
-            border-radius: 3px;
-            position: relative;
-            animation: float 3s infinite ease-in-out;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        @keyframes arcadeGlitch {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+                filter: hue-rotate(0deg) brightness(1);
+            }
+            25% {
+                transform: translate(5px, -5px) scale(1.01);
+                filter: hue-rotate(5deg) brightness(1.05);
+            }
+            50% {
+                transform: translate(-5px, 5px) scale(0.99);
+                filter: hue-rotate(-3deg) brightness(0.98);
+            }
+            75% {
+                transform: translate(2px, -2px) scale(1.005);
+                filter: hue-rotate(2deg) brightness(1.02);
+            }
         }
 
         .game-info {
@@ -219,7 +233,7 @@
         <section class="games-grid">
             <div class="game-card">
                 <div class="game-image">
-                    <div class="pixel"></div>
+                    <img src="assets/pixel-intruders-cropped.png" alt="Pixel Intruders Game Screenshot">
                 </div>
                 <div class="game-info">
                     <h3 class="game-title">Pixel Intruders</h3>
