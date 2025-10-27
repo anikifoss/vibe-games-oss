@@ -1,6 +1,6 @@
 # vibe-games-oss
 
-A collection of games and demos to showcase the progress of LLM coding capabilities.
+A collection of games and demos to showcase the progress of LLM coding and creative capabilities.
 
 Jump to the [website](https://anikifoss.github.io/vibe-games-oss/) to play the games.
 
