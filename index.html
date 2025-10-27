@@ -13,34 +13,34 @@
             --darker: #050510;
             --light: #f0f0ff;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             background: linear-gradient(to bottom, var(--darker), var(--dark));
             color: var(--light);
             min-height: 100vh;
             line-height: 1.6;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
         }
-        
+
         header {
             padding: 2rem 0;
             text-align: center;
             position: relative;
             overflow: hidden;
         }
-        
+
         header::after {
             content: '';
             position: absolute;
@@ -50,7 +50,7 @@
             height: 2px;
             background: linear-gradient(to right, transparent, var(--primary), transparent);
         }
-        
+
         .logo {
             font-size: 3.5rem;
             font-weight: 800;
@@ -61,14 +61,14 @@
             color: transparent;
             text-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
         }
-        
+
         .tagline {
             font-size: 1.2rem;
             opacity: 0.9;
             max-width: 600px;
             margin: 0 auto;
         }
-        
+
         .ai-badge {
             display: inline-block;
             background: rgba(0, 136, 255, 0.1);
@@ -78,27 +78,27 @@
             font-size: 0.9rem;
             margin-top: 1rem;
         }
-        
+
         .intro {
             text-align: center;
             padding: 3rem 0;
             max-width: 800px;
             margin: 0 auto;
         }
-        
+
         .intro h2 {
             font-size: 2rem;
             margin-bottom: 1.5rem;
             color: var(--primary);
         }
-        
+
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
             padding: 3rem 0;
         }
-        
+
         .game-card {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
@@ -106,12 +106,12 @@
             transition: transform 0.3s, box-shadow 0.3s;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-        
+
         .game-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 157, 0.2);
         }
-        
+
         .game-image {
             height: 200px;
             background: linear-gradient(45deg, #240046, #3c096c);
@@ -121,7 +121,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .game-image::before {
             content: '';
             position: absolute;
@@ -130,12 +130,12 @@
             background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
             animation: pulse 10s infinite linear;
         }
-        
+
         @keyframes pulse {
             0% { transform: rotate(0deg) translate(0, 0); }
             100% { transform: rotate(360deg) translate(0, 0); }
         }
-        
+
         .pixel {
             width: 20px;
             height: 20px;
@@ -145,27 +145,27 @@
             position: relative;
             animation: float 3s infinite ease-in-out;
         }
-        
+
         @keyframes float {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-20px); }
         }
-        
+
         .game-info {
             padding: 1.5rem;
         }
-        
+
         .game-title {
             font-size: 1.5rem;
             margin-bottom: 0.5rem;
             color: var(--primary);
         }
-        
+
         .game-description {
             margin-bottom: 1.5rem;
             opacity: 0.8;
         }
-        
+
         .play-btn {
             display: inline-block;
             background: linear-gradient(to right, var(--primary), var(--secondary));
@@ -176,12 +176,12 @@
             font-weight: 600;
             transition: all 0.3s;
         }
-        
+
         .play-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
         }
-        
+
         footer {
             text-align: center;
             padding: 2rem 0;
@@ -190,12 +190,12 @@
             font-size: 0.9rem;
             opacity: 0.7;
         }
-        
+
         @media (max-width: 768px) {
             .logo {
                 font-size: 2.5rem;
             }
-            
+
             .games-grid {
                 grid-template-columns: 1fr;
             }
@@ -209,13 +209,13 @@
             <p class="tagline">Witnessing the AI gaming revolution, one vibe at a time</p>
             <div class="ai-badge">100% AI-Vibe-Coded</div>
         </header>
-        
+
         <section class="intro">
             <h2>Where AI Meets Play</h2>
             <p>Welcome to Vibe-Games-Oss, a collection of gaming experiences crafted through the mysterious process of "vibe-coding" with artificial intelligence. Each game represents a step forward in AI's creative capabilities—monitoring our own obsolescence has never been so entertaining.</p>
             <p><a href="https://github.com/anikifoss/vibe-games-oss">Github</a></p>
         </section>
-        
+
         <section class="games-grid">
             <div class="game-card">
                 <div class="game-image">
@@ -223,12 +223,12 @@
                 </div>
                 <div class="game-info">
                     <h3 class="game-title">Pixel Intruders</h3>
-                    <p class="game-description">A retro-inspired arcade shoot-em-up where neon pixels descend from the digital void. How long can you hold out against the algorithmic onslaught? (DeepSeek-V3.1-thinking, multi-prompt) </p>
-                    <a href="published/pixel_invaders.html" class="play-btn">Play Now</a>
+                    <p class="game-description">A retro-inspired arcade shoot-em-up where neon pixels descend from the digital void. How long can you hold out against the algorithmic onslaught? (DeepSeek-V3.1-thinking, multi-prompt, 3 days, human art direction, human edits) </p>
+                    <a href="published/pixel_intruders.html" class="play-btn">Play Now</a>
                 </div>
             </div>
         </section>
-        
+
         <footer>
             <p>vibe-games-oss &copy; 2025 | Tracking AI's creative ascent through gaming</p>
         </footer>
