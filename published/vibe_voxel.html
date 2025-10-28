@@ -1,0 +1,4143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Voxel</title>
+    <style>
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+}
+canvas {
+    display: block;
+}
+#loading-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    color: white;
+}
+#loading-bar-container {
+    width: 300px;
+    height: 20px;
+    background-color: #0f3460;
+    border-radius: 10px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+#loading-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+#loading-text {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+#ui {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-size: 14px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #444;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    display: none;
+}
+#instructions {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    color: white;
+    font-size: 12px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #444;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    max-width: 350px;
+    display: none;
+}
+#instructions h3 {
+    margin-top: 0;
+    color: #4CAF50;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+}
+#instructions a {
+    color: inherit;
+    text-decoration: none;
+}
+
+#instructions a:hover {
+    text-decoration: underline;
+}
+.key-group {
+    margin-bottom: 15px;
+}
+.key-group h4 {
+    margin: 10px 0 5px 0;
+    color: #FF9800;
+}
+.key-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 3px 0;
+    padding: 2px 5px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+.key {
+    background-color: #333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #FFD700;
+}
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    display: none;
+}
+#crosshair::before,
+#crosshair::after {
+    content: '';
+    position: absolute;
+    background-color: white;
+}
+#crosshair::before {
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    transform: translateY(-50%);
+}
+#crosshair::after {
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+}
+#fps {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    font-size: 14px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #444;
+    display: none;
+}
+#speed-boost {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    color: #FFD700;
+    font-size: 14px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #444;
+    display: none;
+}
+.ui-section {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #444;
+}
+.ui-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.voxel-preview {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+    border: 1px solid #555;
+    vertical-align: middle;
+}
+.mining-icon {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+    vertical-align: middle;
+    background: linear-gradient(45deg, #FF6B6B 25%, transparent 25%, transparent 75%, #FF6B6B 75%),
+                linear-gradient(45deg, #FF6B6B 25%, transparent 25%, transparent 75%, #FF6B6B 75%);
+    background-size: 4px 4px;
+    background-position: 0 0, 2px 2px;
+    border: 1px solid #FF3333;
+}
+#selectedVoxelPreview {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+    border: 1px solid #555;
+    vertical-align: middle;
+}
+#debug {
+    position: absolute;
+    top: 100px;
+    right: 10px;
+    color: white;
+    font-size: 12px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #444;
+    display: none;
+}
+#sound-toggle {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: 2px solid #444;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    display: none;
+}
+.voxel-count {
+    font-size: 10px;
+    color: #888;
+    margin-left: 5px;
+}
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div id="loading-text">Generating World...</div>
+        <div id="loading-bar-container">
+            <div id="loading-bar"></div>
+        </div>
+        <div>This may take a few seconds</div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="ui">
+        <div class="ui-section">
+            <div><strong>Voxel Type:</strong> <span id="selectedVoxelPreview"></span><span id="voxelType">Ground</span></div>
+            <div><strong>Available:</strong> <span id="voxelCount">20</span></div>
+            <div><strong>Mode:</strong> <span id="mode">Mining</span></div>
+        </div>
+        <div class="ui-section">
+            <div><strong>Position:</strong> <span id="position">0, 0, 0</span></div>
+            <div><strong>Chunk:</strong> <span id="chunk">0, 0, 0</span></div>
+        </div>
+        <div class="ui-section">
+            <div><strong>State:</strong> <span id="playerState">Walking</span></div>
+        </div>
+    </div>
+    <div id="crosshair"></div>
+    <div id="fps">FPS: 0</div>
+    <div id="speed-boost">SPEED BOOST</div>
+    <div id="debug">
+        <div><strong>Debug Info:</strong></div>
+        <div>All Groups: <span id="allGroupCount">0</span></div>
+        <div>Query Groups: <span id="queryGroupCount">0</span></div>
+        <div>Visible Groups: <span id="visibleGroupCount">0</span></div>
+        <div>Culled Chunks: <span id="culledChunksCount">0</span></div>
+        <div>Visible Chunks: <span id="visibleChunksCount">0</span></div>
+    </div>
+    <div id="sound-toggle">🔊 Sound: ON</div>
+    <div id="instructions">
+        <h3>VOXEL WORLD CONTROLS</h3>
+
+        <div class="key-group">
+            <h4>MOVEMENT</h4>
+            <div class="key-item">
+                <span>Move</span>
+                <span>
+                    <span class="key">W</span><span class="key">S</span><span class="key">A</span><span class="key">D</span>
+                </span>
+            </div>
+            <div class="key-item"><span>Jump / Fly Up</span><span class="key">SPACE</span></div>
+            <div class="key-item"><span>Sprint (4x Speed)</span><span class="key">SHIFT</span></div>
+            <div class="key-item"><span>Toggle Fly Mode</span><span class="key">F</span></div>
+        </div>
+        <div class="key-group"><h4>INTERACTION</h4>
+            <div class="key-item"><span>Mine/Build (Hold)</span><span class="key">LMB</span></div>
+            <div class="key-item"><span>Look Around</span><span class="key">MOUSE</span></div>
+        </div>
+
+        <div class="key-group">
+            <h4>VOXEL SELECTION</h4>
+            <div class="key-item">
+                <span><div class="mining-icon"></div> Mining Mode</span>
+                <span class="key">Q</span>
+            </div>
+            <div class="key-item">
+                <span><div class="voxel-preview" style="background-color: #4CAF50;"></div> Ground <span class="voxel-count" id="count-ground">20</span></span>
+                <span class="key">1</span>
+            </div>
+            <div class="key-item">
+                <span><div class="voxel-preview" style="background-color: #808080;"></div> Rock <span class="voxel-count" id="count-rock">20</span></span>
+                <span class="key">2</span>
+            </div>
+            <div class="key-item">
+                <span><div class="voxel-preview" style="background-color: #8B4513;"></div> Wood <span class="voxel-count" id="count-wood">20</span></span>
+                <span class="key">3</span>
+            </div>
+            <div class="key-item">
+                <span><div class="voxel-preview" style="background-color: #32CD32;"></div> Bush <span class="voxel-count" id="count-bush">20</span></span>
+                <span class="key">4</span>
+            </div>
+            <div class="key-item">
+                <span><div class="voxel-preview" style="background-color: #C0C0C0;"></div> Metal <span class="voxel-count" id="count-metal">20</span></span>
+                <span class="key">5</span>
+            </div>
+            <div class="key-item">
+                <span><div class="voxel-preview" style="background-color: #FFD700;"></div> Gold <span class="voxel-count" id="count-gold">20</span></span>
+                <span class="key">6</span>
+            </div>
+            <div class="key-item">
+                <span><div class="voxel-preview" style="background-color: #1E90FF;"></div> Water <span class="voxel-count" id="count-water">20</span></span>
+                <span class="key">7</span>
+            </div>
+            <div class="key-item">
+                <span><div class="voxel-preview" style="background-color: #FF4500;"></div> Lava <span class="voxel-count" id="count-lava">20</span></span>
+                <span class="key">8</span>
+            </div>
+            <div class="key-item">
+                <span><div class="voxel-preview" style="background-color: #F8F8FF;"></div> Vapor <span class="voxel-count" id="count-vapor">20</span></span>
+                <span class="key">9</span>
+            </div>
+        </div>
+        <div><a href="https://www.gnu.org/licenses/agpl-3.0.en.html" target="_blank">License: AGPLv3</a></div>
+    </div>
+
+    <script>
+const WORLD_SEED = 9045756;
+const WORLD_SIZE_X = 1024;
+const WORLD_SIZE_Z = 1024;
+const WORLD_SIZE_Y = 128;
+const CHUNK_SIZE = 25;
+const GROUP_SIZE = 4;
+const VIEW_DISTANCE_IN_CHUNKS = 23;
+const WORLD_GENERATOR_BATCH_SIZE = 64;
+const STATING_INVENTORY_COUNTS = 100;
+const NUM_WORKERS = Math.min(8, navigator.hardwareConcurrency || 8);
+
+class VoxelType {
+    static Air = 0;
+    static Ground = 1;
+    static Rock = 2;
+    static Wood = 3;
+    static Bush = 4;
+    static Metal = 5;
+    static Gold = 6;
+    static Water = 7;
+    static Lava = 8;
+    static Vapor = 9;
+
+    static {
+        const mapping = {
+            'Air': VoxelType.Air,
+            'Ground': VoxelType.Ground,
+            'Rock': VoxelType.Rock,
+            'Metal': VoxelType.Metal,
+            'Water': VoxelType.Water,
+            'Lava': VoxelType.Lava,
+            'Vapor': VoxelType.Vapor,
+            'Gold': VoxelType.Gold,
+            'Wood': VoxelType.Wood,
+            'Bush': VoxelType.Bush
+        };
+        this.nameToEnum = new Map(Object.entries(mapping));
+        this.enumToName = new Map();
+        for (const [key, value] of this.nameToEnum.entries()) {
+            this.enumToName.set(value, key);
+        }
+    }
+}
+
+// Mutable 3D Vector
+class Vec3 {
+    constructor(x, y, z) { this.x = x; this.y = y; this.z = z; }
+    static fromScalar(s) { return new Vec3(s, s, s); }
+    static fromKey(k) { return Vec3.fromArray(k.split(',').map(Number)); }
+
+    static fromArray(a) { return new Vec3(a[0], a[1], a[2]); }
+
+    static zero() { return new Vec3(0, 0, 0); }
+
+    get r() { return this.x; }
+    set r(v) { this.x = v; }
+
+    get g() { return this.y; }
+    set g(v) { this.y = v; }
+
+    get b() { return this.z; }
+    set b(v) { this.z = v; }
+
+    toKey() { return `${this.x},${this.y},${this.z}`; }
+    add(v) { return v ? new Vec3(this.x+v.x, this.y+v.y, this.z+v.z) : this.clone(); }
+    subtract(v) { return new Vec3(this.x-v.x, this.y-v.y, this.z-v.z); }
+    multiplyScalar(s) { return new Vec3(this.x * s, this.y * s, this.z * s); }
+    divideScalar(s) { return new Vec3(this.x / s, this.y / s, this.z / s); }
+    length() { return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z); }
+    multiply(v) { return new Vec3(this.x * v.x, this.y * v.y, this.z * v.z); }
+    dot(v) { return this.x * v.x + this.y * v.y + this.z * v.z; }
+    cross(v) { return new Vec3(this.y*v.z-this.z*v.y, this.z*v.x-this.x*v.z, this.x*v.y-this.y*v.x); }
+    clone() { return new Vec3(this.x, this.y, this.z); }
+    toArray() { return [this.x, this.y, this.z]; }
+    equals(v) { return this.x === v.x && this.y === v.y && this.z === v.z; }
+    floor() { return new Vec3(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z)); }
+    min(v) { return new Vec3(Math.min(this.x,v.x), Math.min(this.y,v.y), Math.min(this.z,v.z)); }
+    max(v) { return new Vec3(Math.max(this.x,v.x), Math.max(this.y,v.y), Math.max(this.z,v.z)); }
+    mix(v, t) { return this.multiplyScalar(1 - t).add(v.multiplyScalar(t)); }
+    toString() { return `Vec3(${this.toKey()})`; }
+
+    normalize() {
+        const len = this.length();
+        if (len === 0) return new Vec3(0, 0, 0);
+        return new Vec3(this.x / len, this.y / len, this.z / len);
+    }
+}
+
+class VisibilityManagement {
+    constructor(world) {
+        this.world = world;
+        this.groups = new Map();
+        this.dirtyChunks = new Set();
+        this.workerPool = null;
+    }
+
+    // Create a worker script for parallel mesh generation
+    createWorkerScript() {
+        return `
+            ${Vec3.toString()}
+            ${Chunk.toString()}
+            ${VoxelType.toString()}
+            ${World.toString()}
+
+            const CHUNK_SIZE = ${CHUNK_SIZE};
+
+            self.onmessage = function(e) {
+                const task = e.data;
+
+                if (task.type === 'genGroupMeshes') {
+                    try {
+                        const results = [];
+                        const chunksData = task.param.adjChunks.concat(task.param.groupChunks)
+                        const chunks = new Map();
+                        for (const data of chunksData) {
+                            const chunk = new Chunk(Vec3.fromKey(data.chunkKey));
+                            chunk.voxels = data.voxels;
+                            chunks.set(data.chunkKey, chunk);
+                        }
+                        const world = new World(chunks);
+
+                        for (const data of task.param.groupChunks) {
+                            const chunk = new Chunk(Vec3.fromKey(data.chunkKey));
+                            chunk.voxels = data.voxels;
+
+                            chunk.generateMesh(world);
+
+                            const m = chunk.mesh;
+                            results.push({
+                                chunkKey: chunk.position.toKey(),
+                                meshData: {
+                                    vertices: m.vertices.buffer,
+                                    normals: m.normals.buffer,
+                                    texCoords: m.texCoords.buffer,
+                                    indices: m.indices.buffer,
+                                    vertexCount: m.vertexCount,
+                                    indexCount: m.indexCount
+                                }
+                            });
+                        }
+
+                        const transferList = [];
+                        for (const result of results) {
+                            const d = result.meshData;
+                            transferList.push(d.vertices, d.normals, d.texCoords, d.indices);
+                        }
+
+                        self.postMessage({
+                            taskId: task.taskId,
+                            groupKey: task.param.groupKey,
+                            results: results,
+                            error: null
+                        }, transferList);
+
+                    } catch (error) {
+                        self.postMessage({
+                            taskId: task.taskId,
+                            groupKey: task.param.groupKey,
+                            results: [],
+                            error: error.message
+                        });
+                    }
+                }
+            };
+        `;
+    }
+
+    async initialize(progressCallback) {
+        const workerScript = this.createWorkerScript();
+        const blob = new Blob([workerScript], { type: 'application/javascript' });
+        const workerScriptUrl = URL.createObjectURL(blob);
+
+        this.workerPool = new WorkerPool(workerScriptUrl, NUM_WORKERS);
+
+        try {
+            // First, add all chunks to groups without generating meshes
+            for (const chunk of this.world.chunks.values()) {
+                this.addChunkToGroup(chunk);
+            }
+
+            const totalGroups = this.groups.size;
+            let completedGroups = 0;
+
+            // Process each group in parallel
+            const promises = [];
+            for (const [groupKey, group] of this.groups) {
+                const promise = this.processGroupInWorker(groupKey, group)
+                    .then(() => {
+                        completedGroups++;
+                        const progress = completedGroups / totalGroups;
+                        if (progressCallback) {
+                            progressCallback(progress);
+                        }
+                    });
+                    promises.push(promise);
+            }
+            await Promise.all(promises);
+        } finally {
+            if (this.workerPool) {
+                this.workerPool.terminateAll();
+                this.workerPool = null;
+            }
+        }
+    }
+
+    // Process a single group using a worker
+    async processGroupInWorker(groupKey, group) {
+        const groupChunks = [];
+        const adjChunks = new Map();
+        const gc = Vec3.fromKey(groupKey);
+
+        // Collect chunks in this group and their immediate neighbors
+        for (let cx = gc.x * GROUP_SIZE; cx < (gc.x + 1) * GROUP_SIZE; cx++) {
+            for (let cy = gc.y * GROUP_SIZE; cy < (gc.y + 1) * GROUP_SIZE; cy++) {
+                for (let cz = gc.z * GROUP_SIZE; cz < (gc.z + 1) * GROUP_SIZE; cz++) {
+                    const chunk = this.world.getChunk(new Vec3(cx, cy, cz));
+                    if (chunk) {
+                        groupChunks.push(chunk);
+
+                        // Add adjacent chunks for mesh generation context
+                        const adjCoords = [
+                            new Vec3(cx-1, cy, cz), new Vec3(cx+1, cy, cz),
+                            new Vec3(cx, cy-1, cz), new Vec3(cx, cy+1, cz),
+                            new Vec3(cx, cy, cz-1), new Vec3(cx, cy, cz+1)
+                        ];
+
+                        for (const adjCoord of adjCoords) {
+                            const adjChunk = this.world.getChunk(adjCoord);
+                            if (adjChunk) {
+                                adjChunks.set(adjChunk.position.toKey(), adjChunk);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Delete all the group chunks to avoid sending duplicate data to worker
+        for (const chunk of groupChunks) {
+            adjChunks.delete(chunk.position.toKey())
+        }
+        const adjChunksArray = Array.from(adjChunks.values());
+
+        const task = new Task(
+            'genGroupMeshes',
+            `${groupKey}-${Date.now()}`,
+            {
+                groupKey: groupKey,
+                groupChunks: groupChunks.map((c) => this.serializeChunk(c)),
+                adjChunks: adjChunksArray.map((c) => this.serializeChunk(c))
+            }
+        );
+
+        const result = await this.workerPool.assignTask(task);
+        if (result.error) {
+            console.error(`Error processing group ${groupKey}:`, result.error);
+            return;
+        }
+
+        group.chunks.clear();
+
+        for (const meshRes of result.results) {
+            const chunkCoord = Vec3.fromKey(meshRes.chunkKey);
+            const chunk = this.world.getChunk(chunkCoord);
+
+            // Update chunks with generated meshes
+            if (chunk) {
+                const d = meshRes.meshData;
+                chunk.mesh = {
+                    vertices: new Float32Array(d.vertices),
+                    normals: new Float32Array(d.normals),
+                    texCoords: new Float32Array(d.texCoords),
+                    indices: new Uint16Array(d.indices),
+                    vertexCount: d.vertexCount,
+                    indexCount: d.indexCount
+                };
+                chunk.glBufferNeedsUpdate = true;
+            }
+
+            // Update group chunks with only those that have geometry
+            if (chunk && chunk.mesh && chunk.mesh.vertexCount > 0) {
+                group.chunks.set(chunk.position.toKey(), chunk);
+            }
+        }
+    }
+
+    serializeChunk(chunk) {
+        return {
+            chunkKey: chunk.position.toKey(),
+            voxels: new Uint8Array(chunk.voxels) // Copy voxels to avoid lock contention.
+        };
+    }
+
+    groupCoordsForChunk(chunkPos) {
+        return chunkPos.divideScalar(GROUP_SIZE).floor();
+    }
+
+    addChunkToGroup(chunk) {
+        const groupCoords = this.groupCoordsForChunk(chunk.position);
+        const groupKey = groupCoords.toKey();
+
+        if (!this.groups.has(groupKey)) {
+            this.groups.set(groupKey, {
+                chunks: new Map(),
+                boundingBox: {
+                    min: groupCoords.multiplyScalar(GROUP_SIZE * CHUNK_SIZE),
+                    max: groupCoords.add(Vec3.fromScalar(1)).multiplyScalar(GROUP_SIZE * CHUNK_SIZE)
+                }
+            });
+        }
+
+        const group = this.groups.get(groupKey);
+        group.chunks.set(chunk.position.toKey(), chunk);
+    }
+
+    removeChunkFromGroup(chunk) {
+        const groupKey = this.groupCoordsForChunk(chunk.position).toKey();
+        if (this.groups.has(groupKey)) {
+            const group = this.groups.get(groupKey);
+            group.chunks.delete(chunk.position.toKey());
+
+            // Remove group if empty
+            if (group.chunks.size === 0) {
+                this.groups.delete(groupKey);
+            }
+        }
+    }
+
+    markDirty(chunk) {
+        this.dirtyChunks.add(chunk);
+    }
+
+    processDirty() {
+        for (const chunk of this.dirtyChunks) {
+            chunk.generateMesh(this.world);
+            const hasGeometry = chunk.mesh && chunk.mesh.vertexCount > 0;
+
+            const groupKey = this.groupCoordsForChunk(chunk.position).toKey();
+            const isInGroup = this.groups.has(groupKey) &&
+                this.groups.get(groupKey).chunks.has(chunk.position.toKey());
+
+            if (hasGeometry && !isInGroup) {
+                this.addChunkToGroup(chunk);
+            } else if (!hasGeometry && isInGroup) {
+                this.removeChunkFromGroup(chunk);
+            }
+            // If chunk has geometry and is already in group, no change needed
+        }
+
+        this.dirtyChunks.clear();
+    }
+
+    // Get visible chunks based on player position and frustum
+    getVisible(playerPos, frustum) {
+        const visibleChunks = [];
+        let queryGroupCount = 0;
+        let visibleGroupCount = 0;
+        let culledChunksCount = 0;
+        let visibleChunksCount = 0;
+
+        // Calculate group range based on visibility distance
+        const groupRadius = Math.ceil((VIEW_DISTANCE_IN_CHUNKS + 1) / GROUP_SIZE);
+        const playerChunkPos = playerPos.divideScalar(CHUNK_SIZE).floor();
+        const playerGroupCoords = this.groupCoordsForChunk(playerChunkPos);
+
+        // Iterate over groups that may be visible
+        for (let gx = playerGroupCoords.x - groupRadius; gx <= playerGroupCoords.x + groupRadius; gx++) {
+            for (let gy = playerGroupCoords.y - groupRadius; gy <= playerGroupCoords.y + groupRadius; gy++) {
+                for (let gz = playerGroupCoords.z - groupRadius; gz <= playerGroupCoords.z + groupRadius; gz++) {
+                    const groupKey = new Vec3(gx, gy, gz).toKey();
+
+                    if (this.groups.has(groupKey)) {
+                        queryGroupCount++;
+                        const group = this.groups.get(groupKey);
+
+                        const intersectionRes = frustum.intersectsBox(group.boundingBox);
+                        if (intersectionRes == 1) { // Inside
+                            visibleGroupCount++;
+                            for (const [chunkKey, chunk] of group.chunks) {
+                                visibleChunks.push(chunk);
+                            }
+                        } else if (intersectionRes == 2) { // Intersects
+                            visibleGroupCount++;
+                            for (const [chunkKey, chunk] of group.chunks) {
+                                if (frustum.intersectsBox(chunk.boundingBox) > 0) {
+                                    visibleChunks.push(chunk);
+                                } else {
+                                    culledChunksCount++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        document.getElementById('allGroupCount').textContent = this.groups.size;
+        document.getElementById('queryGroupCount').textContent = queryGroupCount;
+        document.getElementById('visibleGroupCount').textContent = visibleGroupCount;
+        document.getElementById('culledChunksCount').textContent = culledChunksCount;
+        document.getElementById('visibleChunksCount').textContent = visibleChunks.length;
+
+        return visibleChunks;
+    }
+}
+
+// TODO: TOKEN REDUCTION REFACTOR STOPPED HERE
+// Terrain Generation System using Parallel World Generator
+class TerrainSystem {
+    constructor() {
+        this.worldSeed = WORLD_SEED;
+        this.worldSize = new Vec3(WORLD_SIZE_X, WORLD_SIZE_Y, WORLD_SIZE_Z);
+        const concurrency = Math.min(8, navigator.hardwareConcurrency || 8)
+        this.parallelGenerator = new ParallelWorldGenerator(this.worldSeed, this.worldSize, concurrency);
+        this.sharedTerrainGenerator = new SharedTerrainGenerator(this.worldSeed, this.worldSize);
+    }
+
+    static placePresetOnSurface(world, preset, pos) {
+        // Find surface height at x,z by searching from high to low
+        let surfaceY = 0;
+        for (let y = pos.y + 30; y >= pos.y - 30; y--) {
+            if (world.getVoxel(new Vec3(pos.x, y, pos.z)) !== VoxelType.Air) {
+                surfaceY = y + 1;
+                break;
+            }
+        }
+        // If no surface found, use y=0
+        if (surfaceY === 0 && world.getVoxel(new Vec3(pos.x, 0, pos.z)) === VoxelType.Air) {
+            surfaceY = -1;
+        }
+
+        // Place the preset at the surface
+        world.placePreset(new Vec3(pos.x, surfaceY, pos.z), preset);
+
+        // Add ground padding if needed for the bottom layer
+        const height = preset.length;
+        const width = preset[0].length;
+        const depth = preset[0][0].length;
+
+        for (let px = 0; px < width; px++) {
+            for (let pz = 0; pz < depth; pz++) {
+                if (preset[0][px][pz] !== VoxelType.Air) {
+                    const worldPos = new Vec3(pos.x + px, surfaceY, pos.z + pz);
+                    const belowPos = new Vec3(worldPos.x, worldPos.y - 1, worldPos.z);
+                    if (world.getVoxel(belowPos) === VoxelType.Air) {
+                        world.setVoxel(belowPos, VoxelType.Ground);
+                    }
+                }
+            }
+        }
+    }
+
+    async generateInitialTerrain(world, progressCallback) {
+        // Set the world reference for the parallel generator
+        this.parallelGenerator.setWorld(world);
+
+        // Generate world around center chunk (0,0,0) with specified world size
+        const centerChunk = new Vec3(0, 0, 0);
+
+        try {
+            await this.parallelGenerator.generateWorld(centerChunk, progressCallback);
+
+            this.sharedTerrainGenerator.generateCrossChunkFeatures(world);
+
+            if (progressCallback) {
+                progressCallback(1.0);
+            }
+        } catch (error) {
+            console.error('Terrain generation failed:', error);
+            throw error;
+        }
+    }
+}
+
+// Data Types for Parallel World Generation
+class Task {
+    constructor(type, taskId, param) {
+        this.type = type;
+        this.taskId = taskId;
+        this.param = param;
+    }
+}
+
+// Worker Pool
+class WorkerPool {
+    constructor(workerScriptUrl, numberOfWorkers) {
+        this.workers = [];
+        this.taskQueue = [];
+        this.taskIdCounter = 0;
+        this.workerStatus = new Map(); // Track which worker is busy
+
+        // Create workers
+        for (let i = 0; i < numberOfWorkers; i++) {
+            const worker = new Worker(workerScriptUrl);
+            worker.onmessage = (e) => this.handleWorkerMessage(worker, e);
+            worker.onerror = (e) => this.handleWorkerError(worker, e);
+
+            this.workers.push(worker);
+            this.workerStatus.set(worker, { busy: false, currentTask: null });
+        }
+    }
+
+    assignTask(task) {
+        return new Promise((resolve, reject) => {
+            const taskItem = {
+                task: task,
+                resolve: resolve,
+                reject: reject
+            };
+
+            // Try to assign immediately to an available worker
+            const availableWorker = this.getAvailableWorker();
+            if (availableWorker) {
+                this.assignTaskToWorker(availableWorker, taskItem);
+            } else {
+                // Queue the task if no worker is available
+                this.taskQueue.push(taskItem);
+            }
+        });
+    }
+
+    getAvailableWorker() {
+        for (const worker of this.workers) {
+            if (!this.workerStatus.get(worker).busy) {
+                return worker;
+            }
+        }
+        return null;
+    }
+
+    assignTaskToWorker(worker, taskItem) {
+        const status = this.workerStatus.get(worker);
+        status.busy = true;
+        status.currentTask = taskItem;
+        worker.postMessage(taskItem.task);
+    }
+
+    handleWorkerMessage(worker, e) {
+        const status = this.workerStatus.get(worker);
+        const taskItem = status.currentTask;
+
+        if (taskItem) {
+            status.busy = false;
+            status.currentTask = null;
+
+            taskItem.resolve(e.data);
+
+            // Assign next task from queue
+            if (this.taskQueue.length > 0) {
+                const nextTask = this.taskQueue.shift();
+                this.assignTaskToWorker(worker, nextTask);
+            }
+        }
+    }
+
+    handleWorkerError(worker, e) {
+        const status = this.workerStatus.get(worker);
+        const taskItem = status.currentTask;
+
+        if (taskItem) {
+            status.busy = false;
+            status.currentTask = null;
+            taskItem.reject(new Error(`Worker error: ${e.message}`));
+
+            // Assign next task from queue
+            if (this.taskQueue.length > 0) {
+                const nextTask = this.taskQueue.shift();
+                this.assignTaskToWorker(worker, nextTask);
+            }
+        }
+    }
+
+    terminateAll() {
+        for (const worker of this.workers) {
+            worker.terminate();
+        }
+        this.workers = [];
+        this.taskQueue = [];
+        this.workerStatus.clear();
+    }
+}
+
+// Parallel World Generator
+class ParallelWorldGenerator {
+    constructor(worldSeed, worldSize, numberOfWorkers = 8) {
+        this.worldSeed = worldSeed;
+        this.worldSize = worldSize;
+        this.workerPool = null;
+        this.isGenerating = false;
+        this.pendingTasks = [];
+
+        // Create worker script as blob URL
+        const workerScript = this.createWorkerScript();
+        const blob = new Blob([workerScript], { type: 'application/javascript' });
+        const workerScriptUrl = URL.createObjectURL(blob);
+
+        this.workerPool = new WorkerPool(workerScriptUrl, numberOfWorkers);
+    }
+
+    createWorkerScript() {
+        return `
+            // Import the shared terrain generator class
+            ${Vec3.toString()}
+            ${SharedTerrainGenerator.toString()}
+            ${PerlinNoise.toString()}
+            ${VoxelType.toString()}
+
+            const CHUNK_SIZE = ${CHUNK_SIZE};
+
+            const terrainGenerator = new SharedTerrainGenerator(
+                ${this.worldSeed},
+                new Vec3(${this.worldSize.x}, ${this.worldSize.y}, ${this.worldSize.z})
+            );
+
+            function generateBatchOfChunks(chunkCoordinates) {
+                const chunkDataArray = [];
+
+                for (const coord of chunkCoordinates) {
+                    const voxels = terrainGenerator.generateChunk(new Vec3(coord.x, coord.y, coord.z));
+
+                    chunkDataArray.push({
+                        chunkCoord: coord,
+                        voxelBuffer: voxels.buffer
+                    });
+                }
+
+                return chunkDataArray;
+            }
+
+            self.onmessage = function(e) {
+                const task = e.data;
+
+                if (task.type === 'generateChunks') {
+                    try {
+                        const chunkDataArray = generateBatchOfChunks(task.param.chunkCoordinates);
+
+                        // Transfer the ArrayBuffers to avoid copying
+                        const transferList = chunkDataArray.map(data => data.voxelBuffer);
+
+                        self.postMessage({
+                            taskId: task.taskId,
+                            results: chunkDataArray,
+                            error: null
+                        }, transferList);
+                    } catch (error) {
+                        self.postMessage({
+                            taskId: task.taskId,
+                            results: [],
+                            error: error.message
+                        });
+                    }
+                }
+            };
+        `;
+    }
+
+    async generateWorld(centerChunk, progressCallback) {
+        if (this.isGenerating) {
+            throw new Error('Generation already in progress');
+        }
+
+        this.isGenerating = true;
+
+        try {
+            // Calculate chunks to generate
+            const chunksToGenerate = this.calculateChunksInCube(centerChunk);
+            const totalChunks = chunksToGenerate.length;
+            let finishedChunks = 0;
+
+            // Create batches
+            const batchSize = WORLD_GENERATOR_BATCH_SIZE;
+            const batches = this.createBatches(chunksToGenerate, batchSize);
+
+            // Process batches in parallel
+            const promises = batches.map((batch, index) => {
+                const task = new Task(
+                    'generateChunks',
+                    index,
+                    { chunkCoordinates: batch }
+                );
+
+                return this.workerPool.assignTask(task);
+            });
+
+            // Process batches as they complete to update progress incrementally
+            for (let i = 0; i < promises.length; i++) {
+                const result = await promises[i];
+
+                if (result.error) {
+                    console.error('Worker error:', result.error);
+                    continue;
+                }
+
+                this.integrateChunks(result.results);
+                finishedChunks += result.results.length;
+
+                // Update loading screen immediately
+                if (progressCallback) {
+                    progressCallback(finishedChunks / totalChunks);
+                }
+            }
+
+            this.isGenerating = false;
+
+        } catch (error) {
+            console.error('World generation failed:', error);
+            this.abortGeneration();
+            throw error;
+        }
+    }
+
+    calculateChunksInCube(centerChunk) {
+        const chunks = [];
+        const worldSizeInChunks = this.worldSize.divideScalar(CHUNK_SIZE);
+        const halfSize = worldSizeInChunks.divideScalar(2).floor();
+
+        for (let x = -halfSize.x; x <= halfSize.x; x++) {
+            for (let y = -halfSize.y; y <= halfSize.y; y++) {
+                for (let z = -halfSize.z; z <= halfSize.z; z++) {
+                    chunks.push(centerChunk.add(new Vec3(x, y, z)));
+                }
+            }
+        }
+
+        return chunks;
+    }
+
+    createBatches(chunkList, batchSize) {
+        const batches = [];
+        for (let i = 0; i < chunkList.length; i += batchSize) {
+            batches.push(chunkList.slice(i, i + batchSize));
+        }
+        return batches;
+    }
+
+    integrateChunks(chunkDataArray) {
+        for (const chunkData of chunkDataArray) {
+            const chunkPos = new Vec3(chunkData.chunkCoord.x, chunkData.chunkCoord.y, chunkData.chunkCoord.z);
+            const chunk = new Chunk(chunkPos);
+
+            // Copy voxel data from ArrayBuffer into a native JavaScript array for smoother gameplay
+            const voxels = new Uint8Array(chunkData.voxelBuffer);
+            chunk.voxels = Array.from(voxels);
+            chunk.glBufferNeedsUpdate = true;
+
+            // Add to world
+            this.world.setChunk(chunk);
+        }
+    }
+
+    abortGeneration() {
+        this.isGenerating = false;
+        this.workerPool.terminateAll();
+    }
+
+    setWorld(world) {
+        this.world = world;
+    }
+}
+
+// Procedural Sound Generator
+class SoundGenerator {
+    constructor() {
+        this.audioContext = null;
+        this.sounds = {};
+        this.isEnabled = true;
+        this.initAudioContext();
+    }
+
+    initAudioContext() {
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.warn('Web Audio API not supported');
+            this.isEnabled = false;
+        }
+    }
+
+    // Generate a simple tone with ADSR envelope
+    generateTone(frequency, duration, volume = 0.5, type = 'sine') {
+        if (!this.isEnabled || !this.audioContext) return null;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.type = type;
+        oscillator.frequency.value = frequency;
+
+        // ADSR envelope
+        const now = this.audioContext.currentTime;
+        const attack = 0.01;
+        const decay = 0.1;
+        const sustain = 0.7;
+        const release = duration - attack - decay;
+
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(volume, now + attack);
+        gainNode.gain.linearRampToValueAtTime(volume * sustain, now + attack + decay);
+        gainNode.gain.linearRampToValueAtTime(0, now + duration);
+
+        oscillator.start(now);
+        oscillator.stop(now + duration);
+
+        return oscillator;
+    }
+
+    // Generate noise with filter
+    generateNoise(duration, volume = 0.3, filterFreq = 1000) {
+        if (!this.isEnabled || !this.audioContext) return null;
+
+        const bufferSize = this.audioContext.sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const output = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+
+        const source = this.audioContext.createBufferSource();
+        const gainNode = this.audioContext.createGain();
+        const filter = this.audioContext.createBiquadFilter();
+
+        source.buffer = buffer;
+        source.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        filter.type = 'bandpass';
+        filter.frequency.value = filterFreq;
+
+        const now = this.audioContext.currentTime;
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(volume, now + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        source.start(now);
+
+        return source;
+    }
+
+    // Generate voxel mining or building sound based on voxel type
+    generateVoxelSound(voxelType) {
+        let baseFreq, duration, volume;
+
+        switch(voxelType) {
+            case VoxelType.Ground:
+                baseFreq = 100;
+                duration = 0.2;
+                volume = 0.3;
+                break;
+            case VoxelType.Rock:
+                baseFreq = 150;
+                duration = 0.25;
+                volume = 0.2;
+                break;
+            case VoxelType.Wood:
+                baseFreq = 120;
+                duration = 0.3;
+                volume = 0.2;
+                break;
+            case VoxelType.Bush:
+                baseFreq = 90;
+                duration = 0.15;
+                volume = 0.2;
+                break;
+            case VoxelType.Metal:
+                baseFreq = 200;
+                duration = 0.3;
+                volume = 0.15;
+                break;
+            case VoxelType.Gold:
+                baseFreq = 180;
+                duration = 0.35;
+                volume = 0.25;
+                break;
+            case VoxelType.Water:
+                baseFreq = 300;
+                duration = 0.4;
+                volume = 0.1;
+                break;
+            case VoxelType.Lava:
+                baseFreq = 250;
+                duration = 0.5;
+                volume = 0.1;
+                break;
+            case VoxelType.Vapor:
+                baseFreq = 400;
+                duration = 0.6;
+                volume = 0.075;
+                break;
+            default:
+                baseFreq = 150;
+                duration = 0.25;
+                volume = 0.2;
+        }
+
+        this.generateTone(baseFreq, duration, volume, 'sine');
+        // Add a higher harmonic for more interesting sound
+        this.generateTone(baseFreq * 2, duration * 0.7, volume * 0.5, 'sine');
+    }
+
+    // Generate jump sound
+    generateJumpSound() {
+        // Rising tone for jump
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(200, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(400, this.audioContext.currentTime + 0.2);
+
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, this.audioContext.currentTime + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.3);
+
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + 0.3);
+    }
+
+    // Generate landing sound
+    generateLandingSound() {
+        let baseFreq = 60;
+        let duration = 0.4;
+        let volume = 0.5;
+
+        this.generateTone(baseFreq, duration, volume, 'sine');
+        this.generateNoise(duration * 0.7, volume * 0.4, 800);
+    }
+
+    // Generate swimming sound
+    generateSwimSound() {
+        this.generateTone(150, 0.3, 0.2, 'sine');
+        this.generateNoise(0.4, 0.1, 500);
+    }
+
+    // Toggle sound on/off
+    toggle() {
+        this.isEnabled = !this.isEnabled;
+        return this.isEnabled;
+    }
+}
+
+// Matrix operations for 4x4 matrices (column-major)
+class Mat4 {
+    static identity() {
+        return [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ];
+    }
+
+    static multiply(a, b) {
+        const result = [];
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                let sum = 0;
+                for (let k = 0; k < 4; k++) {
+                    sum += a[i + k * 4] * b[k + j * 4];
+                }
+                result[i + j * 4] = sum;
+            }
+        }
+        return result;
+    }
+
+    static translate(matrix, translation) {
+        const translateMatrix = [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            translation.x, translation.y, translation.z, 1
+        ];
+        return Mat4.multiply(translateMatrix, matrix);
+    }
+
+    static perspective(fov, aspect, near, far) {
+        const f = 1.0 / Math.tan(fov / 2);
+        const rangeInv = 1.0 / (near - far);
+
+        return [
+            f / aspect, 0, 0, 0,
+            0, f, 0, 0,
+            0, 0, (near + far) * rangeInv, -1,
+            0, 0, near * far * rangeInv * 2, 0
+        ];
+    }
+
+    static lookAt(eye, center, up) {
+        const forward = center.subtract(eye).normalize();
+        const right = forward.cross(up).normalize();
+        const cameraUp = right.cross(forward);
+
+        return [
+            right.x, cameraUp.x, -forward.x, 0,
+            right.y, cameraUp.y, -forward.y, 0,
+            right.z, cameraUp.z, -forward.z, 0,
+            -right.dot(eye), -cameraUp.dot(eye), forward.dot(eye), 1
+        ];
+    }
+}
+
+// Frustum class for culling
+class Frustum {
+    constructor() {
+        this.planes = new Array(6);
+    }
+
+    setFromMatrix(matrix) {
+        // Extract the six planes from the matrix
+        const m = matrix;
+
+        // Left plane
+        this.planes[0] = [
+            m[3] + m[0],
+            m[7] + m[4],
+            m[11] + m[8],
+            m[15] + m[12]
+        ];
+
+        // Right plane
+        this.planes[1] = [
+            m[3] - m[0],
+            m[7] - m[4],
+            m[11] - m[8],
+            m[15] - m[12]
+        ];
+
+        // Bottom plane
+        this.planes[2] = [
+            m[3] + m[1],
+            m[7] + m[5],
+            m[11] + m[9],
+            m[15] + m[13]
+        ];
+
+        // Top plane
+        this.planes[3] = [
+            m[3] - m[1],
+            m[7] - m[5],
+            m[11] - m[9],
+            m[15] - m[13]
+        ];
+
+        // Near plane
+        this.planes[4] = [
+            m[3] + m[2],
+            m[7] + m[6],
+            m[11] + m[10],
+            m[15] + m[14]
+        ];
+
+        // Far plane
+        this.planes[5] = [
+            m[3] - m[2],
+            m[7] - m[6],
+            m[11] - m[10],
+            m[15] - m[14]
+        ];
+
+        // Normalize all planes
+        for (let i = 0; i < 6; i++) {
+            const plane = this.planes[i];
+            const length = Math.sqrt(plane[0] * plane[0] + plane[1] * plane[1] + plane[2] * plane[2]);
+            if (length > 0) {
+                plane[0] /= length;
+                plane[1] /= length;
+                plane[2] /= length;
+                plane[3] /= length;
+            }
+        }
+    }
+
+    // Check if a bounding box is inside the frustum
+    intersectsBox(box) {
+        const min = box.min;
+        const max = box.max;
+
+        // Check if the box is outside any frustum plane
+        for (let i = 0; i < 6; i++) {
+            const plane = this.planes[i];
+            const a = plane[0], b = plane[1], c = plane[2], d = plane[3];
+
+            // Positive vertex (farthest in the direction of the plane normal)
+            let px = a > 0 ? max.x : min.x;
+            let py = b > 0 ? max.y : min.y;
+            let pz = c > 0 ? max.z : min.z;
+
+            // If positive vertex is outside the plane, the box is outside the frustum
+            if (a * px + b * py + c * pz + d < 0) {
+                return 0; // Outside
+            }
+        }
+
+        // Check if the box is fully inside all frustum planes
+        for (let i = 0; i < 6; i++) {
+            const plane = this.planes[i];
+            const a = plane[0], b = plane[1], c = plane[2], d = plane[3];
+
+            // Negative vertex (farthest in the opposite direction of the plane normal)
+            let nx = a > 0 ? min.x : max.x;
+            let ny = b > 0 ? min.y : max.y;
+            let nz = c > 0 ? min.z : max.z;
+
+            // If negative vertex is outside the plane, the box intersects the frustum
+            if (a * nx + b * ny + c * nz + d < 0) {
+                return 2; // Intersecting
+            }
+        }
+
+        // If all negative vertices are inside, the box is fully inside
+        return 1; // Inside
+    }
+}
+
+// Enhanced Perlin Noise Generator
+class PerlinNoise {
+    constructor(seed = Math.random() * 1000) {
+        this.permutation = [];
+        for (let i = 0; i < 256; i++) {
+            this.permutation[i] = i;
+        }
+
+        // Seed-based shuffling
+        const rng = this.seededRandom(seed);
+        for (let i = 255; i > 0; i--) {
+            const j = Math.floor(rng() * (i + 1));
+            [this.permutation[i], this.permutation[j]] = [this.permutation[j], this.permutation[i]];
+        }
+
+        // Duplicate the permutation array
+        for (let i = 0; i < 256; i++) {
+            this.permutation[256 + i] = this.permutation[i];
+        }
+    }
+
+    seededRandom(seed) {
+        return function() {
+            seed = (seed * 9301 + 49297) % 233280;
+            return seed / 233280;
+        };
+    }
+
+    fade(t) {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+
+    lerp(t, a, b) {
+        return a + t * (b - a);
+    }
+
+    grad(hash, x, y, z) {
+        const h = hash & 15;
+        const u = h < 8 ? x : y;
+        const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+        return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+    }
+
+    noise(x, y, z, octaves = 1, persistence = 0.5) {
+        let total = 0;
+        let frequency = 1;
+        let amplitude = 1;
+        let maxValue = 0;
+
+        for (let i = 0; i < octaves; i++) {
+            const X = Math.floor(x * frequency) & 255;
+            const Y = Math.floor(y * frequency) & 255;
+            const Z = Math.floor(z * frequency) & 255;
+
+            let localX = x * frequency - Math.floor(x * frequency);
+            let localY = y * frequency - Math.floor(y * frequency);
+            let localZ = z * frequency - Math.floor(z * frequency);
+
+            const u = this.fade(localX);
+            const v = this.fade(localY);
+            const w = this.fade(localZ);
+
+            const A = this.permutation[X] + Y;
+            const AA = this.permutation[A] + Z;
+            const AB = this.permutation[A + 1] + Z;
+            const B = this.permutation[X + 1] + Y;
+            const BA = this.permutation[B] + Z;
+            const BB = this.permutation[B + 1] + Z;
+
+            const noiseValue = this.lerp(w,
+                this.lerp(v,
+                    this.lerp(u,
+                        this.grad(this.permutation[AA], localX, localY, localZ),
+                        this.grad(this.permutation[BA], localX - 1, localY, localZ)
+                    ),
+                    this.lerp(u,
+                        this.grad(this.permutation[AB], localX, localY - 1, localZ),
+                        this.grad(this.permutation[BB], localX - 1, localY - 1, localZ)
+                    )
+                ),
+                this.lerp(v,
+                    this.lerp(u,
+                        this.grad(this.permutation[AA + 1], localX, localY, localZ - 1),
+                        this.grad(this.permutation[BA + 1], localX - 1, localY, localZ - 1)
+                    ),
+                    this.lerp(u,
+                        this.grad(this.permutation[AB + 1], localX, localY - 1, localZ - 1),
+                        this.grad(this.permutation[BB + 1], localX - 1, localY - 1, localZ - 1)
+                    )
+                )
+            );
+
+            total += noiseValue * amplitude;
+            maxValue += amplitude;
+            amplitude *= persistence;
+            frequency *= 2;
+        }
+
+        return total / maxValue;
+    }
+}
+
+// Hardcoded Tree Presets
+const TREE_PRESETS = [
+    // Large Redwood Tree
+    [
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,4,0,0],[0,4,4,4,0],[4,4,3,4,4],[0,4,4,4,0],[0,0,4,0,0]],
+        [[0,4,4,4,0],[4,4,4,4,4],[4,4,4,4,4],[4,4,4,4,4],[0,4,4,4,0]],
+        [[0,0,4,0,0],[0,4,4,4,0],[4,4,4,4,4],[0,4,4,4,0],[0,0,4,0,0]]
+    ],
+    // Cherry Blossom Tree
+    [
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,4,0,0],[0,4,4,4,0],[4,4,3,4,4],[0,4,4,4,0],[0,0,4,0,0]],
+        [[4,4,4,4,4],[4,4,4,4,4],[4,4,4,4,4],[4,4,4,4,4],[4,4,4,4,4]],
+        [[0,4,4,4,0],[4,4,4,4,4],[4,4,4,4,4],[4,4,4,4,4],[0,4,4,4,0]],
+        [[0,0,4,0,0],[0,4,4,4,0],[4,4,4,4,4],[0,4,4,4,0],[0,0,4,0,0]]
+    ],
+    // Curved Willow
+    [
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,4,4,4,0],[0,4,3,4,0],[0,4,4,4,0],[0,0,0,0,0]],
+        [[4,4,4,4,4],[4,4,4,4,4],[4,4,3,4,4],[4,4,4,4,4],[4,4,4,4,4]],
+        [[0,4,4,4,0],[4,4,4,4,4],[4,4,4,4,4],[4,4,4,4,4],[0,4,4,4,0]]
+    ],
+    // Mushroom Tree
+    [
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[4,4,4,4,4],[4,4,4,4,4],[4,4,3,4,4],[4,4,4,4,4],[4,4,4,4,4]],
+        [[4,4,4,4,4],[4,4,4,4,4],[4,4,4,4,4],[4,4,4,4,4],[4,4,4,4,4]],
+        [[0,4,4,4,0],[4,4,4,4,4],[4,4,4,4,4],[4,4,4,4,4],[0,4,4,4,0]]
+    ],
+    // Star-Shaped Tree
+    [
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,0,0,0],[0,0,0,0,0],[0,0,3,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+        [[0,0,4,0,0],[0,0,4,0,0],[4,4,3,4,4],[0,0,4,0,0],[0,0,4,0,0]],
+        [[0,4,0,4,0],[4,0,4,0,4],[0,4,3,4,0],[4,0,4,0,4],[0,4,0,4,0]],
+        [[4,0,0,0,4],[0,4,0,4,0],[0,0,4,0,0],[0,4,0,4,0],[4,0,0,0,4]]
+    ]
+];
+
+// Hardcoded Bush Presets
+const BUSH_PRESETS = [
+    // Tall thin bush
+    [
+        [[4]],
+        [[4]],
+        [[4]],
+        [[4]]
+    ],
+    // Zigzag bush
+    [
+        [[4, 0, 0],
+        [0, 4, 0],
+        [0, 0, 4]],
+        [[0, 0, 4],
+        [0, 4, 0],
+        [4, 0, 0]],
+        [[4, 0, 0],
+        [0, 4, 0],
+        [0, 0, 4]]
+    ],
+    // Scattered leaves bush
+    [
+        [[4, 0, 4],
+        [0, 4, 0],
+        [4, 0, 4]],
+        [[0, 4, 0],
+        [4, 0, 4],
+        [0, 4, 0]]
+    ],
+    // Spiky bush
+    [
+        [[0, 0, 4, 0],
+        [0, 4, 4, 4],
+        [4, 4, 4, 0],
+        [0, 4, 0, 0]],
+        [[4, 0, 0, 4],
+        [0, 4, 4, 0],
+        [0, 0, 4, 4],
+        [4, 0, 0, 4]]
+    ],
+    // Flower-like bush pattern
+    [
+        [[0, 4, 4, 0],
+        [4, 4, 4, 4],
+        [4, 4, 4, 4],
+        [0, 4, 4, 0]],
+        [[0, 0, 0, 0],
+        [0, 4, 4, 0],
+        [0, 4, 4, 0],
+        [0, 0, 0, 0]]
+    ]
+];
+
+// Enhanced Texture Generator with Cloud-like Vapor and Specular Materials
+class TextureGenerator {
+    static generatePerlinTexture(type, width = 16, height = 16, isTopFace = false) {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        const noise = new PerlinNoise(type * 100 + (isTopFace ? 1000 : 0)); // Different seed for top face
+
+        // Base colors with enhanced specular properties
+        const baseColors = {
+            [VoxelType.Ground]: {
+                main: isTopFace ? '#4CAF50' : '#8B4513', // Green for top, brown for sides
+                dark: isTopFace ? '#388E3C' : '#654321',
+                light: isTopFace ? '#66BB6A' : '#A0522D',
+                variation: isTopFace ? '#43A047' : '#9C661F',
+                highlight: isTopFace ? '#81C784' : '#CD853F',
+            },
+            [VoxelType.Rock]: {
+                main: '#696969',
+                dark: '#505050',
+                light: '#808080',
+                variation: '#778899',
+                highlight: '#A9A9A9',
+            },
+            [VoxelType.Metal]: {
+                main: '#C8D6E8',
+                dark: '#A0ACB8',
+                light: '#E0E0E0',
+                variation: '#D3D3D3',
+                highlight: '#F5FAFF',
+            },
+            [VoxelType.Water]: {
+                main: '#1E90FF',
+                dark: '#000080',
+                light: '#87CEEB',
+                variation: '#4682B4',
+                highlight: '#ADD8E6',
+            },
+            [VoxelType.Lava]: {
+                main: '#FF4500',
+                dark: '#8B0000',
+                light: '#FF6347',
+                variation: '#DC143C',
+                highlight: '#FFA07A',
+            },
+            [VoxelType.Vapor]: {
+                main: '#F8F8FF', // Cloud white
+                dark: '#E8E8E8',
+                light: '#FFFFFF',
+                variation: '#F0F0F0',
+                highlight: '#F8F8FF',
+            },
+            [VoxelType.Gold]: {
+                main: '#FFD700',
+                dark: '#B8860B',
+                light: '#FFEC8B',
+                variation: '#DAA520',
+                highlight: '#FFFACD',
+            },
+            [VoxelType.Wood]: {
+                main: '#8B4513',
+                dark: '#654321',
+                light: '#A0522D',
+                variation: '#CD853F',
+                highlight: '#DEB887',
+            },
+            [VoxelType.Bush]: {
+                main: '#32CD32',
+                dark: '#228B22',
+                light: '#90EE90',
+                variation: '#3CB371',
+                highlight: '#98FB98',
+            }
+        };
+
+        const colors = baseColors[type] || baseColors[VoxelType.Ground];
+
+        // Generate texture using Perlin noise
+        const imageData = ctx.createImageData(width, height);
+        const data = imageData.data;
+
+        for (let x = 0; x < width; x++) {
+            for (let y = 0; y < height; y++) {
+                // Generate noise values for different channels
+                const noise1 = noise.noise(x * 0.3, y * 0.3, 0, 3, 0.5);
+                const noise2 = noise.noise(x * 0.1, y * 0.1, 10, 2, 0.7);
+                const noise3 = noise.noise(x * 0.5, y * 0.5, 20, 1, 0.9);
+
+                // Convert noise to color based on voxel type
+                let colorVec;
+
+                if (type === VoxelType.Ground) {
+                    if (isTopFace) {
+                        // Grassy top with variation
+                        colorVec = this.lerpColorVec(colors.dark, colors.main, colors.light, noise1);
+                    } else {
+                        // Earth tones with natural variation for sides
+                        colorVec = this.lerpColorVec(colors.dark, colors.main, colors.light, noise1);
+
+                        // Add some rock-like speckles
+                        if (noise2 > 0.7) {
+                            const rockColor = this.hexToRgbVec(colors.variation);
+                            colorVec = colorVec.mix(rockColor, 0.7);
+                        }
+                    }
+                } else if (type === VoxelType.Rock) {
+                    // Stone texture with mineral veins
+                    const base = this.hexToRgbVec(colors.main);
+                    const vein = this.hexToRgbVec(colors.variation);
+
+                    if (noise2 > 0.6) {
+                        colorVec = base.mix(vein, (noise2 - 0.6) * 2.5);
+                    } else {
+                        const variation = new Vec3(noise1 * 30, noise1 * 30, noise1 * 30);
+                        colorVec = base.add(variation);
+                    }
+                } else if (type === VoxelType.Metal) {
+                    // Metallic sheen with imperfections
+                    const base = this.hexToRgbVec(colors.main);
+                    const highlight = this.hexToRgbVec(colors.highlight);
+
+                    // Create a brushed metal effect
+                    const metalNoise = Math.abs(noise1) * 0.6 + 0.4;
+                    if (noise3 > 0.5) {
+                        colorVec = base.mix(highlight, metalNoise);
+                    } else {
+                        colorVec = base.multiplyScalar(metalNoise);
+                    }
+                } else if (type === VoxelType.Water) {
+                    // Water with depth variation and surface highlights
+                    const base = this.hexToRgbVec(colors.main);
+                    const deep = this.hexToRgbVec(colors.dark);
+                    const foam = this.hexToRgbVec(colors.highlight);
+
+                    if (noise2 > 0.8) {
+                        // Foam/whitecaps
+                        colorVec = foam;
+                    } else {
+                        // Water depth variation
+                        const depth = (noise1 + 1) * 0.5;
+                        colorVec = deep.mix(base, depth);
+                    }
+                } else if (type === VoxelType.Lava) {
+                    // Lava with glowing embers and flow patterns
+                    const base = this.hexToRgbVec(colors.main);
+                    const hot = this.hexToRgbVec(colors.light);
+                    const cooler = this.hexToRgbVec(colors.dark);
+
+                    // Create flowing lava effect with tileable pattern
+                    const flowX = Math.sin((x / width) * Math.PI * 2) * 0.5 + 0.5;
+                    const flowY = Math.sin((y / height) * Math.PI * 2) * 0.5 + 0.5;
+                    const flow = (flowX + flowY) / 2;
+                    const heat = noise1 * 0.7 + 0.3;
+
+                    if (noise2 > 0.7) {
+                        // Hot spots
+                        colorVec = base.mix(hot, heat);
+                    } else {
+                        // Cooler lava with tileable flow pattern
+                        colorVec = cooler.mix(base, flow);
+                    }
+                } else if (type === VoxelType.Vapor) {
+                    // Cloud-like vapor with fluffy appearance
+                    const base = this.hexToRgbVec(colors.main);
+                    const wisp = this.hexToRgbVec(colors.highlight);
+
+                    // Create fluffy cloud effect with more variation
+                    const density = (noise1 + 1) * 0.5;
+                    const wisps = noise2 > 0.6 ? (noise2 - 0.6) * 2.5 : 0;
+                    const cloudDetail = noise3 * 0.3;
+
+                    // Use brighter, more varied whites for clouds
+                    const mixed = base.mix(wisp, wisps);
+                    const detailed = mixed.multiplyScalar(density).add(Vec3.fromScalar(cloudDetail * 50 + 50));
+                    // Ensure values stay in range
+                    colorVec = detailed.min(Vec3.fromScalar(255));
+                } else if (type === VoxelType.Gold) {
+                    // Gold with shiny, reflective properties
+                    const base = this.hexToRgbVec(colors.main);
+                    const highlight = this.hexToRgbVec(colors.highlight);
+
+                    // Create a shiny gold effect with specular highlights
+                    const shine = Math.abs(noise1) * 0.9 + 0.1;
+                    if (noise2 > 0.7) {
+                        // Bright highlights
+                        colorVec = base.mix(highlight, shine);
+                    } else {
+                        // Base gold color with variation
+                        const variation = Vec3.fromScalar(0.8 + noise1 * 0.4);
+                        colorVec = base.multiply(variation);
+                    }
+                } else if (type === VoxelType.Wood) {
+                    // Wood with grain pattern
+                    const base = this.hexToRgbVec(colors.main);
+                    const grain = this.hexToRgbVec(colors.variation);
+
+                    // Create wood grain effect
+                    const grainPattern = Math.abs(noise1) * 0.5 + 0.5;
+                    if (noise2 > 0.6) {
+                        colorVec = base.mix(grain, grainPattern);
+                    } else {
+                        const variation = Vec3.fromScalar(noise1 * 20);
+                        colorVec = base.add(variation);
+                    }
+                } else if (type === VoxelType.Bush) {
+                    // Bush with leafy texture
+                    const base = this.hexToRgbVec(colors.main);
+                    const highlight = this.hexToRgbVec(colors.highlight);
+
+                    // Create leafy, organic pattern
+                    const leafPattern = (noise1 + 1) * 0.5;
+                    if (noise2 > 0.7) {
+                        // Leaf highlights
+                        colorVec = base.mix(highlight, leafPattern);
+                    } else {
+                        // Base bush color
+                        const variation = Vec3.fromScalar(0.7 + noise1 * 0.6);
+                        colorVec = base.multiply(variation);
+                    }
+                }
+
+                const clampedColor = colorVec.min(Vec3.fromScalar(255)).max(Vec3.fromScalar(0));
+
+                const index = (y * width + x) * 4;
+                data[index] = clampedColor.r;
+                data[index + 1] = clampedColor.g;
+                data[index + 2] = clampedColor.b;
+                data[index + 3] = 255; // All voxels opaque, including water and vapor
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        return canvas;
+    }
+
+    static hexToRgbVec(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? new Vec3(
+            parseInt(result[1], 16),
+            parseInt(result[2], 16),
+            parseInt(result[3], 16)
+        ) : new Vec3(0, 0, 0);
+    }
+
+    static lerpColorVec(hex1, hex2, hex3, t) {
+        const c1 = this.hexToRgbVec(hex1);
+        const c2 = this.hexToRgbVec(hex2);
+        const c3 = this.hexToRgbVec(hex3);
+
+        let result;
+
+        if (t < 0.5) {
+            const u = t * 2;
+            result = c1.mix(c2, u);
+        } else {
+            const u = (t - 0.5) * 2;
+            result = c2.mix(c3, u);
+        }
+
+        return new Vec3(Math.round(result.r), Math.round(result.g), Math.round(result.b));
+    }
+
+    // Create a texture atlas containing all voxel textures with padding
+    static generateTextureAtlas() {
+        const originalTextureSize = 16;
+        const paddingPx = 8;
+        const paddedTextureSize = originalTextureSize + paddingPx * 2; // original + padding on each side
+        const emptyTilesCount = 6; // Named constant for empty tiles
+        const atlasWidth = paddedTextureSize * (10 + emptyTilesCount); // 10 used + empties
+        const atlasHeight = paddedTextureSize;
+        const canvas = document.createElement('canvas');
+        canvas.width = atlasWidth;
+        canvas.height = atlasHeight;
+        const ctx = canvas.getContext('2d');
+
+        // Generate each texture and place it in the atlas with padding
+        for (let type = VoxelType.Ground; type <= VoxelType.Vapor; type++) {
+            const texture = TextureGenerator.generatePerlinTexture(type, originalTextureSize, originalTextureSize);
+            const x = (type - 1) * paddedTextureSize;
+
+            // Draw the texture with padding
+            this.drawTextureWithPadding(ctx, texture, x, 0, originalTextureSize, paddedTextureSize, paddingPx);
+        }
+
+        // Type 10: grassy top for ground voxels
+        const grassTexture = TextureGenerator.generatePerlinTexture(VoxelType.Ground, originalTextureSize, originalTextureSize, true);
+        const x = 9 * paddedTextureSize;
+        this.drawTextureWithPadding(ctx, grassTexture, x, 0, originalTextureSize, paddedTextureSize, paddingPx);
+
+        return canvas;
+    }
+
+    // Helper method to copy RGBA data
+    static copyRGBA(sourceData, targetData, sourceIndex, targetIndex) {
+        targetData[targetIndex] = sourceData[sourceIndex];
+        targetData[targetIndex + 1] = sourceData[sourceIndex + 1];
+        targetData[targetIndex + 2] = sourceData[sourceIndex + 2];
+        targetData[targetIndex + 3] = sourceData[sourceIndex + 3];
+    }
+
+    // Helper method to draw a texture with padding on all sides
+    static drawTextureWithPadding(ctx, texture, x, y, originalSize, paddedSize, paddingPx) {
+        // Draw the original texture in the center
+        ctx.drawImage(texture, x + paddingPx, y + paddingPx, originalSize, originalSize);
+
+        // Get image data for edge sampling
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = originalSize;
+        tempCanvas.height = originalSize;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(texture, 0, 0);
+        const imageData = tempCtx.getImageData(0, 0, originalSize, originalSize);
+        const data = imageData.data;
+
+        // Create padded image data
+        const paddedData = ctx.createImageData(paddedSize, paddedSize);
+
+        // Copy center area (original texture)
+        for (let py = 0; py < originalSize; py++) {
+            for (let px = 0; px < originalSize; px++) {
+                const sourceIndex = (py * originalSize + px) * 4;
+                const targetIndex = ((py + paddingPx) * paddedSize + (px + paddingPx)) * 4;
+                this.copyRGBA(data, paddedData.data, sourceIndex, targetIndex);
+            }
+        }
+
+        // Fill padding by extending adjacent pixels
+        // Top and bottom edges
+        for (let py = 0; py < paddingPx; py++) {
+            for (let px = 0; px < originalSize; px++) {
+                // Top padding rows (copy from first row of original)
+                const topSourceIndex = (0 * originalSize + px) * 4;
+                const topTargetIndex = (py * paddedSize + (px + paddingPx)) * 4;
+                this.copyRGBA(data, paddedData.data, topSourceIndex, topTargetIndex);
+
+                // Bottom padding rows (copy from last row of original)
+                const bottomSourceIndex = ((originalSize - 1) * originalSize + px) * 4;
+                const bottomTargetIndex = ((paddedSize - 1 - py) * paddedSize + (px + paddingPx)) * 4;
+                this.copyRGBA(data, paddedData.data, bottomSourceIndex, bottomTargetIndex);
+            }
+        }
+
+        // Left and right edges
+        for (let px = 0; px < paddingPx; px++) {
+            for (let py = 0; py < originalSize; py++) {
+                // Left padding columns (copy from first column of original)
+                const leftSourceIndex = (py * originalSize + 0) * 4;
+                const leftTargetIndex = ((py + paddingPx) * paddedSize + px) * 4;
+                this.copyRGBA(data, paddedData.data, leftSourceIndex, leftTargetIndex);
+
+                // Right padding columns (copy from last column of original)
+                const rightSourceIndex = (py * originalSize + (originalSize - 1)) * 4;
+                const rightTargetIndex = ((py + paddingPx) * paddedSize + (paddedSize - 1 - px)) * 4;
+                this.copyRGBA(data, paddedData.data, rightSourceIndex, rightTargetIndex);
+            }
+        }
+
+        // Corners (padding x padding pixel blocks)
+        for (let px = 0; px < paddingPx; px++) {
+            for (let py = 0; py < paddingPx; py++) {
+                // Top-left corner (copy top-left pixel)
+                const topLeftSourceIndex = (0 * originalSize + 0) * 4;
+                const topLeftTargetIndex = (py * paddedSize + px) * 4;
+                this.copyRGBA(data, paddedData.data, topLeftSourceIndex, topLeftTargetIndex);
+
+                // Top-right corner (copy top-right pixel)
+                const topRightSourceIndex = (0 * originalSize + (originalSize - 1)) * 4;
+                const topRightTargetIndex = (py * paddedSize + (paddedSize - 1 - px)) * 4;
+                this.copyRGBA(data, paddedData.data, topRightSourceIndex, topRightTargetIndex);
+
+                // Bottom-left corner (copy bottom-left pixel)
+                const bottomLeftSourceIndex = ((originalSize - 1) * originalSize + 0) * 4;
+                const bottomLeftTargetIndex = ((paddedSize - 1 - py) * paddedSize + px) * 4;
+                this.copyRGBA(data, paddedData.data, bottomLeftSourceIndex, bottomLeftTargetIndex);
+
+                // Bottom-right corner (copy bottom-right pixel)
+                const bottomRightSourceIndex = ((originalSize - 1) * originalSize + (originalSize - 1)) * 4;
+                const bottomRightTargetIndex = ((paddedSize - 1 - py) * paddedSize + (paddedSize - 1 - px)) * 4;
+                this.copyRGBA(data, paddedData.data, bottomRightSourceIndex, bottomRightTargetIndex);
+            }
+        }
+
+        // Put the padded image data onto the canvas
+        ctx.putImageData(paddedData, x, 0);
+    }
+}
+
+// Generate texture atlas
+const TEXTURE_ATLAS = TextureGenerator.generateTextureAtlas();
+
+// Chunk class for CHUNK_SIZExCHUNK_SIZExCHUNK_SIZE voxel blocks
+class Chunk {
+    constructor(position) {
+        this.position = position;
+        this.voxels = null; // Remember to init on demand
+        this.mesh = null;
+        this.glBufferNeedsUpdate = true;
+
+        // Bounding box for frustum culling
+        this.boundingBox = {
+            min: position.multiplyScalar(CHUNK_SIZE),
+            max: position.multiplyScalar(CHUNK_SIZE).add(Vec3.fromScalar(CHUNK_SIZE))
+        };
+    }
+
+    getVoxel(localPos) {
+        if (localPos.x < 0 || localPos.x >= CHUNK_SIZE ||
+                localPos.y < 0 || localPos.y >= CHUNK_SIZE ||
+                localPos.z < 0 || localPos.z >= CHUNK_SIZE) {
+            return VoxelType.Air;
+        }
+        return this.voxels[localPos.x + localPos.y * CHUNK_SIZE + localPos.z * CHUNK_SIZE * CHUNK_SIZE];
+    }
+
+    setVoxel(localPos, type) {
+        if (localPos.x < 0 || localPos.x >= CHUNK_SIZE ||
+                localPos.y < 0 || localPos.y >= CHUNK_SIZE ||
+                localPos.z < 0 || localPos.z >= CHUNK_SIZE) {
+            return false;
+        }
+        this.voxels[localPos.x + localPos.y * CHUNK_SIZE + localPos.z * CHUNK_SIZE * CHUNK_SIZE] = type;
+        this.glBufferNeedsUpdate = true;
+    }
+
+    static directions = [
+        new Vec3(1, 0, 0),  // +X
+        new Vec3(-1, 0, 0), // -X
+        new Vec3(0, 1, 0),  // +Y
+        new Vec3(0, -1, 0), // -Y
+        new Vec3(0, 0, 1),  // +Z
+        new Vec3(0, 0, -1)  // -Z
+    ];
+
+    static faceVertices = [
+        // +X face
+        [1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0],
+        // -X face
+        [0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1],
+        // +Y face
+        [0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1],
+        // -Y face
+        [0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0],
+        // +Z face
+        [0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1],
+        // -Z face
+        [0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0]
+    ];
+
+    // Standard UV mapping for each face (will be adjusted based on texture atlas)
+    static faceTexCoords = [
+        [0, 0, 1, 0, 1, 1, 0, 1],
+        [0, 0, 1, 0, 1, 1, 0, 1],
+        [0, 0, 1, 0, 1, 1, 0, 1],
+        [0, 0, 1, 0, 1, 1, 0, 1],
+        [0, 0, 1, 0, 1, 1, 0, 1],
+        [0, 0, 1, 0, 1, 1, 0, 1]
+    ];
+
+    generateMesh(world) {
+        const vertices = [];
+        const indices = [];
+        const normals = [];
+        const texCoords = [];
+
+        const localPos = Vec3.zero();
+        for (let x = 0; x < CHUNK_SIZE; x++) {
+            localPos.x = x;
+            for (let y = 0; y < CHUNK_SIZE; y++) {
+                localPos.y = y;
+                for (let z = 0; z < CHUNK_SIZE; z++) {
+                    localPos.z = z;
+                    const voxelType = this.getVoxel(localPos);
+                    if (voxelType === VoxelType.Air) continue;
+
+                    for (let d = 0; d < Chunk.directions.length; d++) {
+                        const dir = Chunk.directions[d];
+                        const neighborPos = localPos.add(dir);
+
+                        // Check if neighbor is in this chunk or adjacent chunk
+                        let neighborType = VoxelType.Air;
+                        if (neighborPos.x >= 0 && neighborPos.x < CHUNK_SIZE &&
+                                neighborPos.y >= 0 && neighborPos.y < CHUNK_SIZE &&
+                                neighborPos.z >= 0 && neighborPos.z < CHUNK_SIZE) {
+                            neighborType = this.getVoxel(neighborPos);
+                        } else {
+                            // Check adjacent chunk
+                            const adjChunkPos = this.position.add(new Vec3(
+                                neighborPos.x < 0 ? -1 : neighborPos.x >= CHUNK_SIZE ? 1 : 0,
+                                neighborPos.y < 0 ? -1 : neighborPos.y >= CHUNK_SIZE ? 1 : 0,
+                                neighborPos.z < 0 ? -1 : neighborPos.z >= CHUNK_SIZE ? 1 : 0
+                            ));
+
+                            const adjChunk = world.getChunk(adjChunkPos);
+
+                            if (adjChunk) {
+                                const adjLocalPos = new Vec3(
+                                    neighborPos.x < 0 ? CHUNK_SIZE - 1 : neighborPos.x >= CHUNK_SIZE ? 0 : neighborPos.x,
+                                    neighborPos.y < 0 ? CHUNK_SIZE - 1 : neighborPos.y >= CHUNK_SIZE ? 0 : neighborPos.y,
+                                    neighborPos.z < 0 ? CHUNK_SIZE - 1 : neighborPos.z >= CHUNK_SIZE ? 0 : neighborPos.z
+                                );
+                                neighborType = adjChunk.getVoxel(adjLocalPos);
+                            }
+                        }
+
+                        // Only render face if neighbor is air or transparent
+                        if (neighborType === VoxelType.Air ||
+                            (voxelType === VoxelType.Water && neighborType !== VoxelType.Water) ||
+                            (voxelType === VoxelType.Lava && neighborType !== VoxelType.Lava) ||
+                            (voxelType === VoxelType.Vapor && neighborType !== VoxelType.Vapor)) {
+                            const baseIndex = vertices.length / 3;
+                            const faceVerts = Chunk.faceVertices[d];
+                            const faceUVs = Chunk.faceTexCoords[d];
+
+                            // Calculate texture coordinates based on voxel type and face
+                            const tileSize = 16;
+                            const tilePadding = 8;
+                            const paddedTileSize = tileSize + tilePadding * 2;
+                            const emptyTilesCount = 6;
+                            const textureWidth = paddedTileSize * (10 + emptyTilesCount); // 10 textures + empties
+                            const textureHeight = paddedTileSize;
+
+                            // Determine texture index: use grassy texture (9) for top faces of ground
+                            let textureIndex;
+                            if (voxelType === VoxelType.Ground && d === 2) { // Top face (d=2 is +Y)
+                                textureIndex = 9; // Grassy texture
+                            } else {
+                                textureIndex = voxelType - 1; // Standard texture (0-8)
+                            }
+
+                            // Adjust UV coordinates to account for padding
+                            const uOffset = (textureIndex * paddedTileSize + tilePadding) / textureWidth;
+                            const uScale = tileSize / textureWidth;
+                            const vOffset = tilePadding / textureHeight;
+                            const vScale = tileSize / textureHeight;
+
+                            // Add vertices for this face
+                            for (let i = 0; i < 4; i++) {
+                                vertices.push(
+                                    this.position.x * CHUNK_SIZE + x + faceVerts[i * 3],
+                                    this.position.y * CHUNK_SIZE + y + faceVerts[i * 3 + 1],
+                                    this.position.z * CHUNK_SIZE + z + faceVerts[i * 3 + 2]
+                                );
+                                normals.push(dir.x, dir.y, dir.z);
+
+                                // Adjust UV coordinates for texture atlas with padding and half-pixel offset
+                                const u = faceUVs[i * 2] * uScale + uOffset;
+                                const v = faceUVs[i * 2 + 1] * vScale + vOffset;
+                                texCoords.push(u, v);
+                            }
+
+                            // Add indices for two triangles
+                            indices.push(
+                                baseIndex, baseIndex + 1, baseIndex + 2,
+                                baseIndex, baseIndex + 2, baseIndex + 3
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        this.mesh = {
+            vertices: new Float32Array(vertices),
+            normals: new Float32Array(normals),
+            texCoords: new Float32Array(texCoords),
+            indices: new Uint16Array(indices),
+            vertexCount: vertices.length / 3,
+            indexCount: indices.length
+        };
+    }
+}
+
+// World class to manage chunks
+class World {
+    constructor(chunks) {
+        if (chunks) {
+            this.chunks = chunks;
+        } else {
+            this.chunks = new Map();
+        }
+    }
+
+    getChunk(chunkPos) {
+        return this.chunks.get(chunkPos.toKey());
+    }
+
+    setChunk(chunk) {
+        this.chunks.set(chunk.position.toKey(), chunk);
+    }
+
+    getVoxel(worldPos) {
+        const chunkPos = worldPos.divideScalar(CHUNK_SIZE).floor();
+        const chunk = this.getChunk(chunkPos);
+        if (!chunk) return VoxelType.Air;
+
+        const localPos = worldPos.subtract(chunkPos.multiplyScalar(CHUNK_SIZE));
+
+        return chunk.getVoxel(localPos);
+    }
+
+    setVoxel(worldPos, type) {
+        const chunkPos = worldPos.divideScalar(CHUNK_SIZE).floor();
+
+        let chunk = this.getChunk(chunkPos);
+        if (!chunk) {
+            chunk = new Chunk(chunkPos);
+            chunk.voxels = new Uint8Array(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
+            this.setChunk(chunk);
+        }
+
+        const localPos = worldPos.subtract(chunkPos.multiplyScalar(CHUNK_SIZE));
+        chunk.setVoxel(localPos, type);
+
+        // Get adjacent chunks that need updating
+        const adjacentChunks = [];
+
+        // Check if voxel is on chunk boundary and get adjacent chunks
+        if (localPos.x === 0) adjacentChunks.push(chunkPos.add(new Vec3(-1, 0, 0)));
+        if (localPos.x === CHUNK_SIZE - 1) adjacentChunks.push(chunkPos.add(new Vec3(1, 0, 0)));
+        if (localPos.y === 0) adjacentChunks.push(chunkPos.add(new Vec3(0, -1, 0)));
+        if (localPos.y === CHUNK_SIZE - 1) adjacentChunks.push(chunkPos.add(new Vec3(0, 1, 0)));
+        if (localPos.z === 0) adjacentChunks.push(chunkPos.add(new Vec3(0, 0, -1)));
+        if (localPos.z === CHUNK_SIZE - 1) adjacentChunks.push(chunkPos.add(new Vec3(0, 0, 1)));
+
+        const dirtyChunks = [];
+
+        // Mark adjacent chunks for update
+        adjacentChunks.forEach(adjChunkPos => {
+            const adjChunk = this.getChunk(adjChunkPos);
+            if (adjChunk) {
+                adjChunk.glBufferNeedsUpdate = true;
+                dirtyChunks.push(adjChunk);
+            }
+        });
+
+        dirtyChunks.push(chunk);
+        return dirtyChunks;
+    }
+
+    // Method to place a preset formation at exact coordinates
+    placePreset(worldPos, preset) {
+        const height = preset.length;
+        for (let h = 0; h < height; h++) {
+            const width = preset[h].length;
+            for (let w = 0; w < width; w++) {
+                const depth = preset[h][w].length;
+                for (let d = 0; d < depth; d++) {
+                    const voxelType = preset[h][w][d];
+                    if (voxelType !== VoxelType.Air) {
+                        const placePos = worldPos.add(new Vec3(w, h, d));
+                        this.setVoxel(placePos, voxelType);
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+}
+
+// Player class with swimming and flying capabilities
+class Player {
+    constructor() {
+        this.position = new Vec3(0, 0, 0);
+        this.velocity = new Vec3(0, 0, 0);
+        this.pitch = 0; // Vertical look angle
+        this.yaw = 0;   // Horizontal look angle
+        this.height = 2.0; // Player height in units
+        this.onGround = false;
+        this.radius = 0.4; // Player collision radius
+        this.wasOnGround = false;
+        this.isFlying = false;
+        this.isSwimming = false;
+        this.wasSwimming = false;
+    }
+
+    getEyePosition() {
+        return new Vec3(
+            this.position.x,
+            this.position.y + this.height - 0.2, // Eye level
+            this.position.z
+        );
+    }
+
+    getForwardVector() {
+        return new Vec3(
+            Math.sin(this.yaw) * Math.cos(this.pitch),
+            Math.sin(this.pitch),
+            -Math.cos(this.yaw) * Math.cos(this.pitch)
+        );
+    }
+}
+
+// Enhanced Input System with F key support
+class InputSystem {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.keys = {};
+        this.mouse = { x: 0, y: 0, dx: 0, dy: 0, leftClick: false };
+        this.locked = false;
+
+        // Keyboard events
+        document.addEventListener('keydown', (e) => {
+            this.keys[e.key.toLowerCase()] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            this.keys[e.key.toLowerCase()] = false;
+        });
+
+        // Mouse events
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                this.mouse.leftClick = true;
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (e.button === 0) {
+                this.mouse.leftClick = false;
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (this.locked) {
+                this.mouse.dx = e.movementX;
+                this.mouse.dy = e.movementY;
+            }
+        });
+
+        // Lock pointer when clicking on canvas
+        canvas.addEventListener('click', () => {
+            if (!this.locked) {
+                canvas.requestPointerLock();
+            }
+        });
+
+        // Pointer lock events
+        document.addEventListener('pointerlockchange', () => {
+            this.locked = document.pointerLockElement === canvas;
+        });
+    }
+
+    pollInput() {
+        const inputState = {
+            movement: new Vec3(0, 0, 0),
+            mouseDelta: { x: this.mouse.dx, y: this.mouse.dy },
+            leftClick: this.mouse.leftClick,
+            selectedVoxelType: null,
+            speedBoost: this.keys['shift'] || false,
+            jump: this.keys[' '] || false,
+            flyToggle: this.keys['f'] || false,
+            debugToggle: this.keys['i'] || false
+        };
+
+        // Movement keys - Fixed: W moves forward (positive Z), S moves backward (negative Z)
+        if (this.keys['w']) inputState.movement.z += 1;  // Fixed: changed from -1 to +1
+        if (this.keys['s']) inputState.movement.z -= 1;  // Fixed: changed from +1 to -1
+        if (this.keys['a']) inputState.movement.x -= 1;
+        if (this.keys['d']) inputState.movement.x += 1;
+
+        // Voxel selection keys
+        if (this.keys['q']) inputState.selectedVoxelType = -1; // Mining mode
+        if (this.keys['1']) inputState.selectedVoxelType = VoxelType.Ground;
+        if (this.keys['2']) inputState.selectedVoxelType = VoxelType.Rock;
+        if (this.keys['3']) inputState.selectedVoxelType = VoxelType.Wood;
+        if (this.keys['4']) inputState.selectedVoxelType = VoxelType.Bush;
+        if (this.keys['5']) inputState.selectedVoxelType = VoxelType.Metal;
+        if (this.keys['6']) inputState.selectedVoxelType = VoxelType.Gold;
+        if (this.keys['7']) inputState.selectedVoxelType = VoxelType.Water;
+        if (this.keys['8']) inputState.selectedVoxelType = VoxelType.Lava;
+        if (this.keys['9']) inputState.selectedVoxelType = VoxelType.Vapor;
+
+        // Reset mouse delta
+        this.mouse.dx = 0;
+        this.mouse.dy = 0;
+
+        return inputState;
+    }
+}
+
+// Enhanced Physics System with swimming, flying, and speed boost
+class PhysicsSystem {
+    constructor() {
+        this.gravity = -30; // Gravity acceleration
+        this.terminalVelocity = -50; // Terminal velocity in air
+        this.walkSpeed = 5;
+        this.swimSpeed = 3; // Reduced speed in water
+        this.lavaSpeed = 2; // Even slower in lava
+        this.flySpeed = 8; // Flying speed
+        this.boostFactor = 4; // 4x normal speed
+    }
+
+    isPlayerInFluid(player, world) {
+        // Check the voxel at the player's position and slightly below
+        const voxel = world.getVoxel(player.position.floor());
+        const voxelBelow = world.getVoxel(player.position.add(new Vec3(0, -0.5, 0)).floor());
+
+        return voxel === VoxelType.Water || voxel === VoxelType.Lava ||
+                voxelBelow === VoxelType.Water || voxelBelow === VoxelType.Lava;
+    }
+
+    getFluidType(player, world) {
+        const voxel = world.getVoxel(player.position.floor());
+        if (voxel === VoxelType.Water) return VoxelType.Water;
+        if (voxel === VoxelType.Lava) return VoxelType.Lava;
+        return VoxelType.Air;
+    }
+
+    checkCylinderCollision(position, radius, height, world) {
+        // Check cylinder collision at multiple heights and points
+        const levels = [0.1, 0.5, 1.0, 1.7]; // feet, knee, torso, head
+        const angles = [0, Math.PI/4, Math.PI/2, 3*Math.PI/4, Math.PI, 5*Math.PI/4, 3*Math.PI/2, 7*Math.PI/4];
+
+        for (let i = 0; i < levels.length; i++) {
+            const y = position.y + levels[i];
+            for (let j = 0; j < angles.length; j++) {
+                const x = position.x + radius * Math.cos(angles[j]);
+                const z = position.z + radius * Math.sin(angles[j]);
+                const worldPos = new Vec3(x, y, z);
+                const voxel = world.getVoxel(worldPos.floor());
+                if (voxel !== VoxelType.Air && voxel !== VoxelType.Water &&
+                    voxel !== VoxelType.Lava && voxel !== VoxelType.Vapor) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    resolveMovementAxis(player, originalPos, axis, distance, world) {
+        const step = 0.1; // Resolution precision
+        let currentDistance = 0;
+        let direction = Math.sign(distance);
+        let absDistance = Math.abs(distance);
+
+        while (currentDistance < absDistance) {
+            const testDistance = Math.min(step, absDistance - currentDistance);
+            player.position[axis] = originalPos[axis] + direction * (currentDistance + testDistance);
+
+            if (this.checkCylinderCollision(player.position, player.radius, player.height, world)) {
+                // Found collision point, move to previous valid position
+                player.position[axis] = originalPos[axis] + direction * currentDistance;
+                return true;
+            }
+
+            currentDistance += testDistance;
+        }
+
+        player.position[axis] = originalPos[axis] + direction * currentDistance;
+        return false;
+    }
+
+    resolveVerticalCollision(player, velocity, deltaTime, world) {
+        const originalPosition = player.position.clone();
+        const verticalMovement = velocity.y * deltaTime;
+
+        player.position.y += verticalMovement;
+
+        if (verticalMovement > 0) { // Moving up (jumping)
+            // Fix for ceiling collision: check head collision specifically
+            if (this.checkHeadCollision(player, world)) {
+                // Find exact collision height using binary search
+                let low = 0;
+                let high = verticalMovement;
+                const tolerance = 0.001;
+
+                while (high - low > tolerance) {
+                    const mid = (low + high) / 2;
+                    player.position.y = originalPosition.y + mid;
+
+                    if (this.checkHeadCollision(player, world)) {
+                        high = mid;
+                    } else {
+                        low = mid;
+                    }
+                }
+
+                player.position.y = originalPosition.y + low - 0.005; // Push down slightly to ensure no penetration
+                player.velocity.y = 0; // Stop upward movement
+            }
+        } else { // Moving down (falling)
+            if (this.checkCylinderCollision(player.position, player.radius, player.height, world)) {
+                // Find ground height
+                let groundY = originalPosition.y;
+                for (let y = originalPosition.y; y >= originalPosition.y + verticalMovement - 1; y -= 0.1) {
+                    const testPos = new Vec3(player.position.x, y, player.position.z);
+                    if (!this.checkCylinderCollision(testPos, player.radius, player.height, world)) {
+                        groundY = y;
+                        break;
+                    }
+                }
+
+                player.position.y = groundY;
+                player.velocity.y = 0;
+                player.onGround = true;
+            } else {
+                player.onGround = false;
+            }
+        }
+    }
+
+    // New method to specifically check head collision for ceiling detection
+    checkHeadCollision(player, world) {
+        const headY = player.position.y + player.height - 0.05; // Head position
+        const angles = [0, Math.PI/4, Math.PI/2, 3*Math.PI/4, Math.PI, 5*Math.PI/4, 3*Math.PI/2, 7*Math.PI/4];
+
+        for (let j = 0; j < angles.length; j++) {
+            const x = player.position.x + player.radius * Math.cos(angles[j]);
+            const z = player.position.z + player.radius * Math.sin(angles[j]);
+            const worldPos = new Vec3(x, headY, z)
+            const voxel = world.getVoxel(worldPos.floor());
+            if (voxel !== VoxelType.Air && voxel !== VoxelType.Water &&
+                voxel !== VoxelType.Lava && voxel !== VoxelType.Vapor) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    checkGroundContact(player, world) {
+        const groundCheckPosition = player.position.clone();
+        groundCheckPosition.y -= 0.1;
+
+        return this.checkCylinderCollision(groundCheckPosition, player.radius, player.height, world);
+    }
+
+    // Enhanced method to handle ceiling/floor penetration
+    resolveCeilingFloorCollision(player, world) {
+        const headY = player.position.y + player.height - 0.1;
+        const feetY = player.position.y + 0.1;
+
+        // Check ceiling collision
+        if (this.checkHeadCollision(player, world)) {
+            // Find the highest safe Y position below the ceiling
+            let safeY = player.position.y;
+            for (let y = player.position.y; y > player.position.y - 2; y -= 0.05) {
+                player.position.y = y;
+                if (!this.checkHeadCollision(player, world)) {
+                    safeY = y;
+                    break;
+                }
+            }
+            player.position.y = safeY;
+            player.velocity.y = Math.min(player.velocity.y, 0); // Stop upward movement
+        }
+
+        // Check floor collision (if not flying)
+        if (!player.isFlying && this.checkGroundContact(player, world)) {
+            // Find the lowest safe Y position above the floor
+            let safeY = player.position.y;
+            for (let y = player.position.y; y < player.position.y + 2; y += 0.05) {
+                player.position.y = y;
+                if (!this.checkGroundContact(player, world)) {
+                    safeY = y;
+                    break;
+                }
+            }
+            player.position.y = safeY;
+            player.onGround = true;
+            player.velocity.y = 0;
+        }
+    }
+
+    update(player, input, deltaTime, world) {
+        // Apply mouse look with sensitivity 0.006
+        const sensitivity = 0.006;
+        player.yaw += input.mouseDelta.x * sensitivity;
+        player.pitch -= input.mouseDelta.y * sensitivity;
+
+        // Clamp pitch to avoid flipping
+        player.pitch = Math.max(-Math.PI/2 + 0.01, Math.min(Math.PI/2 - 0.01, player.pitch));
+
+        // Check if player is in fluid
+        player.isSwimming = this.isPlayerInFluid(player, world);
+        const fluidType = this.getFluidType(player, world);
+
+        // Determine movement speed based on state
+        let speed = this.walkSpeed;
+        if (player.isFlying) speed = this.flySpeed;
+        else if (player.isSwimming) speed = fluidType === VoxelType.Lava ? this.lavaSpeed : this.swimSpeed;
+
+        // Apply speed boost
+        if (input.speedBoost) speed *= this.boostFactor;
+
+        // Apply gravity if not flying and not swimming
+        if (!player.isFlying && !player.isSwimming) {
+            if (!player.onGround) {
+                // Reduce gravity when swimming and set appropriate terminal velocity
+                const gravityMultiplier = player.isSwimming ? 0.3 : 1.0;
+                player.velocity.y += this.gravity * deltaTime * gravityMultiplier;
+
+                // Apply appropriate terminal velocity
+                player.velocity.y = Math.max(player.velocity.y, this.terminalVelocity);
+            }
+        } else {
+            // No gravity when flying or swimming
+            player.velocity.y = 0;
+        }
+
+        // Handle jumping/flying up
+        if (input.jump) {
+            if (player.isFlying || player.isSwimming) {
+                // Move up when flying or swimming
+                input.movement.y += 1;
+            } else if (player.onGround) {
+                player.velocity.y = Math.sqrt(2 * Math.abs(this.gravity) * 4.0); // Jump to 4 blocks height
+                player.onGround = false;
+            }
+        }
+
+        // Store original position for collision resolution
+        const originalPosition = player.position.clone();
+
+        // Resolve vertical movement first
+        this.resolveVerticalCollision(player, player.velocity, deltaTime, world);
+
+        // Calculate movement from input
+        let movement = input.movement;
+        if (movement.x !== 0 || movement.y !== 0 || movement.z !== 0) {
+            movement = movement.normalize().multiplyScalar(speed);
+        }
+
+        // Apply movement relative to player orientation
+        const forward = player.getForwardVector();
+        const right = forward.cross(new Vec3(0, 1, 0)).normalize();
+
+        // For flying and swimming, use the full forward vector (including vertical component)
+        if (player.isFlying || player.isSwimming) {
+            const moveForward = forward.multiplyScalar(movement.z);
+            const moveRight = right.multiplyScalar(movement.x);
+            const moveUp = new Vec3(0, movement.y, 0);
+            const directionalMovement = moveForward.add(moveRight).add(moveUp).multiplyScalar(deltaTime);
+
+            // Calculate desired position
+            const desiredPosition = player.position.add(directionalMovement);
+
+            // Resolve horizontal movement
+            this.resolveMovementAxis(player, originalPosition, 'x', directionalMovement.x, world);
+            this.resolveMovementAxis(player, originalPosition, 'y', directionalMovement.y, world);
+            this.resolveMovementAxis(player, originalPosition, 'z', directionalMovement.z, world);
+
+            // Ensure we don't penetrate ceilings or floors
+            this.resolveCeilingFloorCollision(player, world);
+        } else {
+            // Regular ground movement with horizontal projection
+            const moveX = right.multiplyScalar(movement.x);
+            const moveZ = new Vec3(forward.x, 0, forward.z).normalize().multiplyScalar(movement.z);
+            const horizontalMovement = moveX.add(moveZ).multiplyScalar(deltaTime);
+
+            // Resolve horizontal movement
+            this.resolveMovementAxis(player, originalPosition, 'x', horizontalMovement.x, world);
+            this.resolveMovementAxis(player, originalPosition, 'z', horizontalMovement.z, world);
+        }
+
+        // Final ground detection
+        player.onGround = this.checkGroundContact(player, world);
+
+        // Prevent bouncing on ground
+        if (player.onGround && Math.abs(player.velocity.y) < 0.1) {
+            player.velocity.y = 0;
+        }
+
+        return {
+            newPosition: player.position,
+            newVelocity: player.velocity,
+            onGround: player.onGround
+        };
+    }
+}
+
+// Voxel Interaction System with continuous mining/building
+class VoxelInteractionSystem {
+    constructor(physicsSystem, soundGenerator, visibilityManagement) {
+        this.physicsSystem = physicsSystem;
+        this.soundGenerator = soundGenerator;
+        this.visibilityManagement = visibilityManagement;
+        this.lastInteractionTime = 0;
+        this.interactionRate = 125; // ms between interactions (8 per second)
+    }
+
+    handleInteraction(player, voxelType, world, currentTime, inventoryVoxelCounts) {
+        // Rate limiting for continuous interaction
+        if (currentTime - this.lastInteractionTime < this.interactionRate) {
+            return { chunksModified: false };
+        }
+
+        this.lastInteractionTime = currentTime;
+
+        const eyePos = player.getEyePosition();
+        const forward = player.getForwardVector();
+
+        // Cast ray to find targeted voxel
+        let distance = 0;
+        let hitVoxel = null;
+        let hitFace = null;
+        let hitVoxelType = VoxelType.Air;
+
+        while (distance < 10) { // Max interaction distance
+            const checkPos = eyePos.add(forward.multiplyScalar(distance));
+            const voxelPos = checkPos.floor();
+
+            const voxel = world.getVoxel(voxelPos);
+
+            if (voxel !== VoxelType.Air) {
+                hitVoxel = voxelPos;
+                hitVoxelType = voxel;
+
+                // Determine which face was hit
+                const prevPos = eyePos.add(forward.multiplyScalar(distance - 0.1));
+                const prevVoxelPos = prevPos.floor();
+
+                if (prevVoxelPos.x !== voxelPos.x) {
+                    hitFace = prevVoxelPos.x < voxelPos.x ? new Vec3(-1, 0, 0) : new Vec3(1, 0, 0);
+                } else if (prevVoxelPos.y !== voxelPos.y) {
+                    hitFace = prevVoxelPos.y < voxelPos.y ? new Vec3(0, -1, 0) : new Vec3(0, 1, 0);
+                } else if (prevVoxelPos.z !== voxelPos.z) {
+                    hitFace = prevVoxelPos.z < voxelPos.z ? new Vec3(0, 0, -1) : new Vec3(0, 0, 1);
+                }
+
+                break;
+            }
+
+            distance += 0.1;
+        }
+
+        // Check if hitVoxel and hitFace are valid before using them
+        if (hitVoxel && hitFace) {
+            if (voxelType === -1) {
+                // Mining mode - remove voxel
+                const dirtyChunks = world.setVoxel(hitVoxel, VoxelType.Air);
+                this.markAffectedChunksAsDirty(dirtyChunks);
+
+                // Increment mined count for this voxel type
+                if (inventoryVoxelCounts[hitVoxelType] !== undefined) {
+                    inventoryVoxelCounts[hitVoxelType]++;
+                }
+
+                // Play mining sound
+                if (this.soundGenerator.isEnabled) {
+                    this.soundGenerator.generateVoxelSound(hitVoxelType);
+                }
+
+                return { chunksModified: true };
+            } else {
+                // Building mode - place voxel in adjacent position
+                const placePos = hitVoxel.add(hitFace);
+
+                // Check if target position is already occupied by a non-air voxel
+                const existingVoxel = world.getVoxel(placePos);
+                if (existingVoxel !== VoxelType.Air) {
+                    return { chunksModified: false };
+                }
+
+                // Check if player has enough voxels of this type
+                if (inventoryVoxelCounts[voxelType] <= 0) {
+                    return { chunksModified: false };
+                }
+
+                let shouldPlaceVoxel = false;
+
+                if (!this.isSolidVoxel(voxelType)) {
+                    shouldPlaceVoxel = true;
+                } else if (this.checkVoxelPlacementCollision(placePos, player, world)) {
+                    // Check if the voxel is being placed below the player and there's space above
+                    const isBelowPlayer = placePos.y - 1 < player.position.y;
+
+                    if (isBelowPlayer && this.checkSpaceAbovePlayer(player, world)) {
+                        // If we can, then push player up and place the voxel
+                        if (this.pushPlayerUp(player, world, placePos)) {
+                            shouldPlaceVoxel = true;
+                        }
+                    }
+                } else {
+                    // No collision, safe to place
+                    shouldPlaceVoxel = true;
+                }
+
+                if (shouldPlaceVoxel) {
+                    const dirtyChunks = world.setVoxel(placePos, voxelType);
+                    this.markAffectedChunksAsDirty(dirtyChunks);
+
+                    // Decrement voxel count
+                    inventoryVoxelCounts[voxelType]--;
+
+                    // Play building sound
+                    if (this.soundGenerator.isEnabled) {
+                        this.soundGenerator.generateVoxelSound(voxelType);
+                    }
+
+                    return { chunksModified: true };
+                } else {
+                    return { chunksModified: false };
+                }
+            }
+        }
+
+        return { chunksModified: false };
+    }
+
+    markAffectedChunksAsDirty(dirtyChunks) {
+        for (chunk of dirtyChunks) {
+            this.visibilityManagement.markDirty(chunk);
+        }
+    }
+
+    // Check if a voxel placement would collide with the player
+    checkVoxelPlacementCollision(voxelPos, player, world) {
+        // Create a temporary world with the proposed voxel placement
+        const tempWorld = {
+            getVoxel: (pos) => {
+                // Check if this is the position where we want to place the voxel
+                if (pos.equals(voxelPos)) {
+                    return VoxelType.Ground; // Treat as solid voxel for collision check
+                }
+                // Otherwise, use the real world's voxel
+                return world.getVoxel(pos);
+            }
+        };
+
+        // Check if the player would collide with this temporary world
+        return this.physicsSystem.checkCylinderCollision(player.position, player.radius, player.height, tempWorld);
+    }
+
+    // Check if there's space above the player to push them up
+    checkSpaceAbovePlayer(player, world, maxHeight = 1) {
+        // Check from player's head position upward
+        const headY = player.position.y + player.height;
+
+        for (let y = headY + 0.1; y <= headY + maxHeight; y += 0.5) {
+            // Check multiple points around the player's cylinder at this height
+            const angles = [0, Math.PI/4, Math.PI/2, 3*Math.PI/4, Math.PI, 5*Math.PI/4, 3*Math.PI/2, 7*Math.PI/4];
+
+            for (let j = 0; j < angles.length; j++) {
+                const x = player.position.x + player.radius * Math.cos(angles[j]);
+                const z = player.position.z + player.radius * Math.sin(angles[j]);
+                const worldPos = new Vec3(x, y, z);
+                const voxel = world.getVoxel(worldPos.floor());
+
+                // If we find a solid voxel, there's not enough space
+                if (this.isSolidVoxel(voxel)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    isSolidVoxel(voxel) {
+        return voxel !== VoxelType.Air &&
+            voxel !== VoxelType.Water &&
+            voxel !== VoxelType.Lava &&
+            voxel !== VoxelType.Vapor;
+    }
+
+    // Push player up to avoid collision with newly placed voxel
+    pushPlayerUp(player, world, voxelPos) {
+        const originalY = player.position.y;
+        let newY = originalY;
+
+        // Try to find a position where the player doesn't collide
+        for (let i = 1; i <= 10; i++) { // Try up to 10 blocks higher
+            player.position.y = originalY + i * 0.5;
+
+            // Check if player still collides with the new voxel
+            if (!this.checkVoxelPlacementCollision(voxelPos, player, world)) {
+                // Found a valid position
+                player.onGround = false; // Player is now in the air
+                player.velocity.y = 0; // Reset vertical velocity
+                return true;
+            }
+        }
+
+        // If we couldn't find a valid position, revert
+        player.position.y = originalY;
+        return false;
+    }
+}
+
+// Enhanced Rendering System with frustum culling, fog, specular lighting, and improved vapor rendering
+class RenderingSystem {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.gl = canvas.getContext('webgl');
+        if (!this.gl) {
+            throw new Error('WebGL not supported');
+        }
+
+        this.shaderProgram = null;
+        this.textureAtlas = null;
+        this.frustum = new Frustum();
+        this.initShaders();
+        this.initTextureAtlas();
+        this.chunkBuffers = new Map(); // Cache for chunk buffers
+    }
+
+    initShaders() {
+        const vsSource = `
+            attribute vec3 aPosition;
+            attribute vec3 aNormal;
+            attribute vec2 aTexCoord;
+
+            uniform mat4 uModelViewProjection;
+            uniform mat4 uModel;
+
+            varying vec3 vNormal;
+            varying vec2 vTexCoord;
+            varying vec3 vPosition;
+
+            void main() {
+                gl_Position = uModelViewProjection * vec4(aPosition, 1.0);
+                vNormal = mat3(uModel) * aNormal;
+                vTexCoord = aTexCoord;
+                vPosition = aPosition;
+            }
+        `;
+
+        const fsSource = `
+            precision mediump float;
+
+            varying vec3 vNormal;
+            varying vec2 vTexCoord;
+            varying vec3 vPosition;
+
+            uniform sampler2D uTexture;
+            uniform vec3 uCameraPosition;
+            uniform float uTime;
+
+            void main() {
+                // Constant ambient light component
+                float ambient = 0.4;
+
+                // Simple directional lighting based on normal
+                vec3 lightDir = normalize(vec3(0.5, 1.0, 0.7));
+                float directional = max(dot(normalize(vNormal), lightDir), 0.3);
+
+                // Specular lighting for reflective materials
+                vec3 viewDir = normalize(uCameraPosition - vPosition);
+                vec3 reflectDir = reflect(-lightDir, normalize(vNormal));
+                float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+
+                // Adjust specular based on voxel type (using texture coordinate)
+                float specularIntensity = 0.0;
+                if (vTexCoord.x < 3.0/16.0) {
+                    // Ground, rock, or wood
+                    specularIntensity = 0.1;
+                } else if (vTexCoord.x < 4.0/16.0) {
+                    // Bush
+                    specularIntensity = 0.2;
+                } else if (vTexCoord.x < 6.0/16.0) {
+                    // Metal or Gold
+                    specularIntensity = 1.0;
+                } else if (vTexCoord.x < 7.0/16.0) {
+                    // Water
+                    specularIntensity = 0.9;
+                } else if (vTexCoord.x < 8.0/16.0) {
+                    // Lava
+                    specularIntensity = 0.6;
+                } else if (vTexCoord.x < 9.0/16.0) {
+                    // Vapor
+                    specularIntensity = 0.3;
+                } else if (vTexCoord.x < 10.0/16.0) {
+                    // Grass top
+                    specularIntensity = 0.2;
+                } else {
+                    // Empty tiles
+                    specularIntensity = 0.1;
+                }
+
+                specular *= specularIntensity * 2.0;
+
+                // Combine lighting
+                float light = clamp(ambient + directional + specular, 0.0, 1.0);
+
+                // Texture color
+                vec4 texColor = texture2D(uTexture, vTexCoord);
+
+                // Water animation: shimmering effect
+                if (vTexCoord.x >= 6.0/16.0 && vTexCoord.x < 7.0/16.0) {
+                    float shimmer = sin(uTime * 3.0 + vPosition.x * 0.5) * 0.1 + 1.0;
+                    texColor.rgb *= shimmer;
+                }
+
+                // Lava animation: pulsating brightness
+                if (vTexCoord.x >= 7.0/16.0 && vTexCoord.x < 8.0/16.0) {
+                    float pulse = sin(uTime * 2.0) * 0.3 + 1.0;
+                    texColor.rgb *= pulse;
+                }
+
+                // Fog effect based on distance
+                float dist = distance(vPosition, uCameraPosition);
+                float fogDensity = 0.000005;
+                float fogFactor = exp(-fogDensity * dist * dist);
+                fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+                // Sky color for fog
+                vec3 fogColor = vec3(0.53, 0.81, 0.98);
+
+                // Special effects for vapor/clouds
+                if (vTexCoord.x >= 8.0/16.0 && vTexCoord.x < 9.0/16.0) {
+                    // Vapor/cloud effect with subtle animation
+                    float cloudPulse = sin(uTime * 0.5 + vPosition.x * 0.1 + vPosition.z * 0.1) * 0.15 + 0.85;
+                    texColor.rgb += 0.4;
+                    texColor.rgb *= cloudPulse;
+                }
+
+                // Final color with fog
+                vec3 color = texColor.rgb * light;
+                color = mix(fogColor, color, fogFactor);
+
+                gl_FragColor = vec4(color, texColor.a);
+            }
+        `;
+
+        const vertexShader = this.compileShader(this.gl.VERTEX_SHADER, vsSource);
+        const fragmentShader = this.compileShader(this.gl.FRAGMENT_SHADER, fsSource);
+
+        this.shaderProgram = this.gl.createProgram();
+        this.gl.attachShader(this.shaderProgram, vertexShader);
+        this.gl.attachShader(this.shaderProgram, fragmentShader);
+        this.gl.linkProgram(this.shaderProgram);
+
+        if (!this.gl.getProgramParameter(this.shaderProgram, this.gl.LINK_STATUS)) {
+            throw new Error('Shader program link error: ' + this.gl.getProgramInfoLog(this.shaderProgram));
+        }
+
+        this.attribLocations = {
+            position: this.gl.getAttribLocation(this.shaderProgram, 'aPosition'),
+            normal: this.gl.getAttribLocation(this.shaderProgram, 'aNormal'),
+            texCoord: this.gl.getAttribLocation(this.shaderProgram, 'aTexCoord')
+        };
+
+        this.uniformLocations = {
+            modelViewProjection: this.gl.getUniformLocation(this.shaderProgram, 'uModelViewProjection'),
+            model: this.gl.getUniformLocation(this.shaderProgram, 'uModel'),
+            texture: this.gl.getUniformLocation(this.shaderProgram, 'uTexture'),
+            cameraPosition: this.gl.getUniformLocation(this.shaderProgram, 'uCameraPosition'),
+            time: this.gl.getUniformLocation(this.shaderProgram, 'uTime')
+        };
+    }
+
+    initTextureAtlas() {
+        const gl = this.gl;
+
+        // Create and configure the texture atlas
+        this.textureAtlas = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.textureAtlas);
+
+        // Set texture parameters with mipmap support
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        // Upload texture atlas data
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, TEXTURE_ATLAS);
+
+        // Generate mipmaps
+        gl.generateMipmap(gl.TEXTURE_2D);
+    }
+
+    compileShader(type, source) {
+        const shader = this.gl.createShader(type);
+        this.gl.shaderSource(shader, source);
+        this.gl.compileShader(shader);
+
+        if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+            throw new Error('Shader compile error: ' + this.gl.getShaderInfoLog(shader));
+        }
+
+        return shader;
+    }
+
+    updateChunkBuffers(chunk) {
+        const gl = this.gl;
+        const chunkKey = chunk.position.toKey();
+
+        // If buffers already exist, delete them
+        if (this.chunkBuffers.has(chunkKey)) {
+            const buffers = this.chunkBuffers.get(chunkKey);
+            gl.deleteBuffer(buffers.vertex);
+            gl.deleteBuffer(buffers.normal);
+            gl.deleteBuffer(buffers.texCoord);
+            gl.deleteBuffer(buffers.index);
+        }
+
+        // Create new buffers
+        const vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, chunk.mesh.vertices, gl.STATIC_DRAW);
+
+        const normalBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, chunk.mesh.normals, gl.STATIC_DRAW);
+
+        const texCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, chunk.mesh.texCoords, gl.STATIC_DRAW);
+
+        const indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, chunk.mesh.indices, gl.STATIC_DRAW);
+
+        // Store buffers in cache
+        this.chunkBuffers.set(chunkKey, {
+            vertex: vertexBuffer,
+            normal: normalBuffer,
+            texCoord: texCoordBuffer,
+            index: indexBuffer,
+            indexCount: chunk.mesh.indexCount
+        });
+    }
+
+    renderFrame(player, visibilityManagement, time) {
+        const gl = this.gl;
+
+        // Set viewport and clear
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        gl.clearColor(0.53, 0.81, 0.98, 1.0); // Sky blue
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // Enable depth testing
+        gl.enable(gl.DEPTH_TEST);
+        gl.disable(gl.BLEND);
+
+        // Use our shader program
+        gl.useProgram(this.shaderProgram);
+
+        // Set up projection matrix with correct far plane
+        const aspect = this.canvas.width / this.canvas.height;
+        const farPlane = VIEW_DISTANCE_IN_CHUNKS * CHUNK_SIZE;
+        const projectionMatrix = Mat4.perspective(Math.PI / 3, aspect, 0.1, farPlane);
+
+        // Set up view matrix
+        const eye = player.getEyePosition();
+        const center = eye.add(player.getForwardVector());
+        const viewMatrix = Mat4.lookAt(eye, center, new Vec3(0, 1, 0));
+
+        // Calculate view-projection matrix for frustum culling
+        const viewProjectionMatrix = Mat4.multiply(projectionMatrix, viewMatrix);
+        this.frustum.setFromMatrix(viewProjectionMatrix);
+        const chunksInFrustum = visibilityManagement.getVisible(player.position, this.frustum);
+
+        // Bind the texture atlas
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.textureAtlas);
+        gl.uniform1i(this.uniformLocations.texture, 0);
+
+        // Set camera position and time for shader effects
+        gl.uniform3f(this.uniformLocations.cameraPosition, eye.x, eye.y, eye.z);
+        gl.uniform1f(this.uniformLocations.time, time * 0.001);
+
+        // Render each visible chunk
+        // Set model matrix (identity for world-space chunks)
+        const modelMatrix = Mat4.identity();
+        gl.uniformMatrix4fv(this.uniformLocations.model, false, modelMatrix);
+
+        // Calculate and set MVP matrix
+        const mvpMatrix = Mat4.multiply(projectionMatrix, viewMatrix);
+        gl.uniformMatrix4fv(this.uniformLocations.modelViewProjection, false, mvpMatrix);
+
+        for (const chunk of chunksInFrustum) {
+            if (chunk.glBufferNeedsUpdate) {
+                this.updateChunkBuffers(chunk);
+                chunk.glBufferNeedsUpdate = false;
+            }
+
+            if (!chunk.mesh || chunk.mesh.vertexCount === 0) continue;
+
+            const chunkKey = chunk.position.toKey();
+            const buffers = this.chunkBuffers.get(chunkKey);
+
+            if (!buffers) {
+                this.updateChunkBuffers(chunk);
+                continue;
+            }
+
+            // Bind the vertex buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vertex);
+            gl.enableVertexAttribArray(this.attribLocations.position);
+            gl.vertexAttribPointer(this.attribLocations.position, 3, gl.FLOAT, false, 0, 0);
+
+            // Bind the normal buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
+            gl.enableVertexAttribArray(this.attribLocations.normal);
+            gl.vertexAttribPointer(this.attribLocations.normal, 3, gl.FLOAT, false, 0, 0);
+
+            // Bind the texture coordinate buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texCoord);
+            gl.enableVertexAttribArray(this.attribLocations.texCoord);
+            gl.vertexAttribPointer(this.attribLocations.texCoord, 2, gl.FLOAT, false, 0, 0);
+
+            // Bind the index buffer
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.index);
+
+            // Draw the chunk
+            gl.drawElements(gl.TRIANGLES, buffers.indexCount, gl.UNSIGNED_SHORT, 0);
+        }
+    }
+}
+
+// Main Game Class with enhanced features
+class Game {
+    constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.resizeCanvas();
+        window.addEventListener('resize', () => this.resizeCanvas());
+
+        this.lastTime = 0;
+        this.frameCount = 0;
+        this.lastFpsUpdate = 0;
+        this.fps = 0;
+        this.lastInteractionTime = 0;
+        this.prevFlyKeyState = false;
+        this.prevDebugKeyState = false;
+        this.debugInfo = {
+            showDebug: false
+        };
+
+        // Initialize voxel counts (player starts with 20 of each type)
+        this.inventoryVoxelCounts = {};
+        for (let type = VoxelType.Ground; type <= VoxelType.Vapor; type++) {
+            this.inventoryVoxelCounts[type] = STATING_INVENTORY_COUNTS;
+        }
+
+        this.gameState = {
+            player: new Player(),
+            world: new World(null)
+        };
+
+        // Create sound generator
+        this.soundGenerator = new SoundGenerator();
+
+        // Create physics system first
+        this.systems = {
+            input: new InputSystem(this.canvas),
+            physics: new PhysicsSystem(),
+            terrain: new TerrainSystem(),
+            visibilityManagement: new VisibilityManagement(this.gameState.world)
+        };
+
+        // Create voxel interaction system with reference to physics system, sound generator, and visibility system
+        this.systems.voxelInteraction = new VoxelInteractionSystem(
+            this.systems.physics,
+            this.soundGenerator,
+            this.systems.visibilityManagement
+        );
+
+        // Create rendering system last
+        this.systems.rendering = new RenderingSystem(this.canvas);
+
+        this.currentVoxelType = -1; // Start in mining mode
+        this.isLoading = true;
+
+        // Add sound toggle event listener
+        document.getElementById('sound-toggle').addEventListener('click', () => {
+            const isEnabled = this.soundGenerator.toggle();
+            document.getElementById('sound-toggle').textContent = isEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+        });
+    }
+
+    resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+
+    updateFPS(currentTime) {
+        this.frameCount++;
+        if (currentTime - this.lastFpsUpdate >= 1000) {
+            this.fps = Math.round(this.frameCount * 1000 / (currentTime - this.lastFpsUpdate));
+            this.frameCount = 0;
+            this.lastFpsUpdate = currentTime;
+            document.getElementById('fps').textContent = `FPS: ${this.fps}`;
+        }
+    }
+
+    updateLoadingBar(progress) {
+        const loadingBar = document.getElementById('loading-bar');
+        const loadingText = document.getElementById('loading-text');
+        const percent = Math.round(progress * 100);
+
+        loadingBar.style.width = `${percent}%`;
+        loadingText.textContent = `Generating World... ${percent}%`;
+    }
+
+    findSafeSpawnPosition(world) {
+        // Find a safe spawn position above terrain
+        for (let x = 0; x < 16; x++) {
+            for (let z = 0; z < 16; z++) {
+                for (let y = 15; y >= 0; y--) {
+                    const voxel = world.getVoxel(new Vec3(x, y, z));
+                    if (voxel !== VoxelType.Air) {
+                        // Spawn two player heights above the ground
+                        return new Vec3(x, y + 4, z);
+                    }
+                }
+            }
+        }
+
+        // Default spawn if no ground found
+        return new Vec3(8, 10, 8);
+    }
+
+    async mainLoop(currentTime) {
+        // Update FPS counter
+        this.updateFPS(currentTime);
+
+        // Calculate delta time (capped at 33ms)
+        let deltaTime = (currentTime - this.lastTime) / 1000;
+        deltaTime = Math.min(deltaTime, 0.033);
+        this.lastTime = currentTime;
+
+        // Process input
+        const inputState = this.systems.input.pollInput();
+
+        // Handle fly mode toggle with edge detection
+        if (inputState.flyToggle && !this.prevFlyKeyState) {
+            this.gameState.player.isFlying = !this.gameState.player.isFlying;
+            // Play a sound when toggling fly mode
+            if (this.soundGenerator.isEnabled) {
+                this.soundGenerator.generateTone(300, 0.2, 0.3, 'sine');
+            }
+        }
+        this.prevFlyKeyState = inputState.flyToggle;
+
+        // Handle debug mode toggle with edge detection
+        if (inputState.debugToggle && !this.prevDebugKeyState) {
+            this.debugInfo.showDebug = !this.debugInfo.showDebug;
+            document.getElementById('debug').style.display = this.debugInfo.showDebug ? 'block' : 'none';
+        }
+        this.prevDebugKeyState = inputState.debugToggle;
+
+        // Update current voxel type from input
+        if (inputState.selectedVoxelType != null) {
+            this.currentVoxelType = inputState.selectedVoxelType;
+        }
+
+        // Show/hide speed boost indicator
+        const speedBoostIndicator = document.getElementById('speed-boost');
+        if (inputState.speedBoost) {
+            speedBoostIndicator.style.display = 'block';
+        } else {
+            speedBoostIndicator.style.display = 'none';
+        }
+
+        // Update physics and player state
+        const physicsResult = this.systems.physics.update(
+            this.gameState.player,
+            inputState,
+            deltaTime,
+            this.gameState.world
+        );
+
+        this.gameState.player.position = physicsResult.newPosition;
+        this.gameState.player.velocity = physicsResult.newVelocity;
+        this.gameState.player.onGround = physicsResult.onGround;
+
+        // Handle landing sound
+        if (this.gameState.player.onGround && !this.gameState.player.wasOnGround) {
+            if (this.soundGenerator.isEnabled) {
+                this.soundGenerator.generateLandingSound();
+            }
+        }
+
+        // Handle jump sound
+        if (inputState.jump && this.gameState.player.wasOnGround && !this.gameState.player.isFlying && !this.gameState.player.isSwimming) {
+            if (this.soundGenerator.isEnabled) {
+                this.soundGenerator.generateJumpSound();
+            }
+        }
+
+        // Handle swim sound when entering water/lava
+        if (this.gameState.player.isSwimming && !this.gameState.player.wasSwimming) {
+            if (this.soundGenerator.isEnabled) {
+                this.soundGenerator.generateSwimSound();
+            }
+        }
+
+        this.gameState.player.wasOnGround = this.gameState.player.onGround;
+        this.gameState.player.wasSwimming = this.gameState.player.isSwimming;
+
+        // Handle voxel interactions if left mouse button is held (continuous)
+        if (inputState.leftClick) {
+            const interactionResult = this.systems.voxelInteraction.handleInteraction(
+                this.gameState.player,
+                this.currentVoxelType,
+                this.gameState.world,
+                currentTime,
+                this.inventoryVoxelCounts,
+            );
+        }
+
+        // Update UI
+        this.updateUI();
+
+        this.systems.visibilityManagement.processDirty();
+        this.systems.rendering.renderFrame(
+            this.gameState.player,
+            this.systems.visibilityManagement,
+            currentTime
+        );
+
+        // Continue the loop
+        requestAnimationFrame((time) => this.mainLoop(time));
+    }
+
+    updateUI() {
+        const voxelPos = this.gameState.player.position.floor();
+        document.getElementById('position').textContent = `${voxelPos.x}, ${voxelPos.y}, ${voxelPos.z}`;
+
+        // Calculate current chunk
+        const chunkPos = this.gameState.player.position.divideScalar(CHUNK_SIZE).floor();
+        document.getElementById('chunk').textContent = `${chunkPos.x}, ${chunkPos.y}, ${chunkPos.z}`;
+
+        document.getElementById('mode').textContent = this.currentVoxelType === -1 ? 'Mining' : 'Building';
+
+        // Update player state display
+        let stateText = 'Walking';
+        if (this.gameState.player.isFlying) stateText = 'Flying';
+        else if (this.gameState.player.isSwimming) stateText = 'Swimming';
+        document.getElementById('playerState').textContent = stateText;
+
+        // Update voxel type display with preview and count
+        const voxelPreview = document.getElementById('selectedVoxelPreview');
+        const voxelTypeText = document.getElementById('voxelType');
+        const voxelCountText = document.getElementById('voxelCount');
+
+        if (this.currentVoxelType === -1) {
+            // Mining mode
+            voxelPreview.style.background = 'linear-gradient(45deg, #FF6B6B 25%, transparent 25%, transparent 75%, #FF6B6B 75%), linear-gradient(45deg, #FF6B6B 25%, transparent 25%, transparent 75%, #FF6B6B 75%)';
+            voxelPreview.style.backgroundSize = '4px 4px';
+            voxelPreview.style.backgroundPosition = '0 0, 2px 2px';
+            voxelPreview.style.border = '1px solid #FF3333';
+            voxelTypeText.textContent = 'N/A';
+            voxelCountText.textContent = '∞';
+        } else {
+            // Building mode - show appropriate color
+            const typeColors = {
+                [VoxelType.Ground]: '#4CAF50',
+                [VoxelType.Rock]: '#808080',
+                [VoxelType.Metal]: '#C0C0C0',
+                [VoxelType.Water]: '#1E90FF',
+                [VoxelType.Lava]: '#FF4500',
+                [VoxelType.Vapor]: '#F8F8FF',
+                [VoxelType.Gold]: '#FFD700',
+                [VoxelType.Wood]: '#8B4513',
+                [VoxelType.Bush]: '#32CD32'
+            };
+
+            voxelPreview.style.background = typeColors[this.currentVoxelType];
+            voxelPreview.style.backgroundSize = '';
+            voxelPreview.style.backgroundPosition = '';
+            voxelPreview.style.border = '1px solid #555';
+            voxelTypeText.textContent = VoxelType.enumToName.get(this.currentVoxelType);
+            voxelCountText.textContent = this.inventoryVoxelCounts[this.currentVoxelType];
+        }
+
+        for (const [voxelName, voxelType] of VoxelType.nameToEnum) {
+            if (voxelName != "Air") {
+                const countElement = document.getElementById(`count-${voxelName.toLowerCase()}`);
+                countElement.textContent = this.inventoryVoxelCounts[voxelType];
+            }
+        }
+    }
+
+    async start() {
+        // Show loading screen
+        const loadingScreen = document.getElementById('loading-screen');
+        loadingScreen.style.display = 'flex';
+
+        try {
+            // Phase 1: World generation (0-70%)
+            await this.systems.terrain.generateInitialTerrain(
+                this.gameState.world,
+                (progress) => {
+                    // Map world generation progress to first half of loading bar
+                    this.updateLoadingBar(progress * 0.7);
+                }
+            );
+
+            // Phase 2: Visibility system initialization (70-100%)
+            await this.systems.visibilityManagement.initialize(
+                (progress) => {
+                    // Map visibility system progress to second half of loading bar
+                    this.updateLoadingBar(0.7 + progress * 0.3);
+                }
+            );
+
+            // Hide loading screen and start game
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+
+                // Show game UI
+                document.getElementById('ui').style.display = 'block';
+                document.getElementById('instructions').style.display = 'block';
+                document.getElementById('crosshair').style.display = 'block';
+                document.getElementById('fps').style.display = 'block';
+                document.getElementById('sound-toggle').style.display = 'block';
+
+                // Debug panel is hidden by default
+                document.getElementById('debug').style.display = 'none';
+
+                // Spawn player safely
+                const spawnPos = this.findSafeSpawnPosition(this.gameState.world);
+                this.gameState.player.position = spawnPos;
+
+                // Initialize player state tracking
+                this.gameState.player.wasSwimming = this.gameState.player.isSwimming;
+
+                // Start main loop
+                requestAnimationFrame((time) => this.mainLoop(time));
+            }, 500); // Short delay to show 100% progress
+
+        } catch (error) {
+            console.error('Failed to generate terrain:', error);
+            loadingScreen.innerHTML = '<div>Error generating world. Please refresh the page.</div>';
+        }
+    }
+}
+
+// Shared Terrain Generator Class (used by both main thread and workers)
+class SharedTerrainGenerator {
+    constructor(worldSeed, worldSize) {
+        this.worldSeed = worldSeed;
+        this.worldSize = worldSize;
+
+        // Create noise instances for terrain, clouds, and caves
+        this.hillsNoise = new PerlinNoise(worldSeed);
+        this.mountainsNoise = new PerlinNoise(worldSeed + 1000);
+        this.transitionNoise = new PerlinNoise(worldSeed + 2000);
+        this.cloudNoise = new PerlinNoise(worldSeed + 6000);
+        this.caveNoise = new PerlinNoise(worldSeed + 7000);
+        this.lavaNoise = new PerlinNoise(worldSeed + 8000);
+        this.caveEntranceNoise = new PerlinNoise(worldSeed + 9000);
+
+        // Parameters for terrain generation
+        this.seaLevel = 0;
+        this.waterLevel = -10;
+
+        // Hills parameters
+        this.hillsAmplitude = 20;
+        this.hillsScale = 0.02;
+        this.hillsOctaves = 4;
+        this.hillsPersistence = 0.5;
+
+        // Mountains parameters
+        this.mountainsAmplitude = 300;
+        this.mountainsScale = 0.003;
+        this.mountainsOctaves = 6;
+        this.mountainsPersistence = 0.5;
+
+        // Transition parameters
+        this.transitionScale = 0.005;
+        this.transitionWidth = 200;
+
+        // Surface layer depth
+        this.surfaceDepth = 2;
+
+        // Mountain rock threshold height
+        this.mountainRockHeight = 20;
+
+        // Cloud parameters
+        this.cloudThreshold = 0.5;
+        this.cloudLevel = 50;
+        this.cloudScale = 0.01;
+        this.cloudOctaves = 2;
+        this.cloudPersistence = 0.5;
+
+        // Cave system parameters - FIXED: More aggressive cave generation
+        this.caveThreshold = 0.3; // Lower threshold = more caves
+        this.caveScale = 0.02; // Smaller scale = larger cave systems
+        this.caveOctaves = 3;
+        this.cavePersistence = 0.6;
+        this.maxCaveDepth = 30; // Start caves deeper
+        this.minCaveDepth = -45; // Extend caves deeper
+
+        // Cave entrance parameters
+        this.caveEntranceThreshold = 0.75; // Lower threshold = more entrances
+        this.caveEntranceScale = 0.008;
+        this.caveEntranceMinSize = 4;
+        this.caveEntranceMaxSize = 10;
+
+        // Lava system parameters - FIXED: Ensure lava only appears underground
+        this.lavaThreshold = 0.65;
+        this.lavaScale = 0.02;
+        this.lavaOctaves = 2;
+        this.lavaPersistence = 0.5;
+        this.lavaMinDepth = 40; // Lava appears much deeper
+        this.lavaMaxDepth = 90; // Don't place lava too deep
+        this.lavaFlowChance = 0.4;
+        this.lavaRiverWidth = 3;
+    }
+
+    generateChunk(chunkPos) {
+        const voxels = new Uint8Array(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
+
+        // First pass: Generate base terrain
+        for (let x = 0; x < CHUNK_SIZE; x++) {
+            for (let z = 0; z < CHUNK_SIZE; z++) {
+                const worldX = chunkPos.x * CHUNK_SIZE + x;
+                const worldZ = chunkPos.z * CHUNK_SIZE + z;
+
+                const transitionValue = this.transitionNoise.noise(
+                    worldX * this.transitionScale,
+                    worldZ * this.transitionScale,
+                    0,
+                    2,
+                    0.5
+                );
+
+                let transitionFactor = (transitionValue + 1) / 2;
+                transitionFactor = Math.pow(transitionFactor, 2);
+
+                const hillsHeight = this.hillsNoise.noise(
+                    worldX * this.hillsScale,
+                    worldZ * this.hillsScale,
+                    0,
+                    this.hillsOctaves,
+                    this.hillsPersistence
+                ) * this.hillsAmplitude + this.seaLevel;
+
+                const mountainsHeight = this.mountainsNoise.noise(
+                    worldX * this.mountainsScale,
+                    worldZ * this.mountainsScale,
+                    0,
+                    this.mountainsOctaves,
+                    this.mountainsPersistence
+                ) * this.mountainsAmplitude + this.seaLevel;
+
+                const terrainHeight = hillsHeight * (1 - transitionFactor) + mountainsHeight * transitionFactor;
+                const roundedHeight = Math.round(terrainHeight);
+
+                for (let y = 0; y < CHUNK_SIZE; y++) {
+                    const worldY = chunkPos.y * CHUNK_SIZE + y;
+                    const index = x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE;
+                    let voxelType = VoxelType.Air;
+
+                    if (worldY <= roundedHeight) {
+                        if (worldY > this.mountainRockHeight) {
+                            voxelType = VoxelType.Rock;
+                        } else {
+                            if (worldY >= roundedHeight - this.surfaceDepth) {
+                                voxelType = VoxelType.Ground;
+                            } else {
+                                voxelType = VoxelType.Rock;
+                            }
+                        }
+                    } else {
+                        if (worldY <= this.waterLevel) {
+                            let isExposedToSurface = true;
+                            for (let checkY = worldY + 1; checkY <= this.waterLevel; checkY++) {
+                                const checkTerrainHeight = this.calculateTerrainHeightAt(worldX, worldZ);
+                                if (checkY <= checkTerrainHeight) {
+                                    isExposedToSurface = false;
+                                    break;
+                                }
+                            }
+                            if (isExposedToSurface) {
+                                voxelType = VoxelType.Water;
+                            }
+                        } else if (worldY > this.cloudLevel) {
+                            const cloudVal = this.cloudNoise.noise(
+                                worldX * this.cloudScale,
+                                worldY * this.cloudScale,
+                                worldZ * this.cloudScale,
+                                this.cloudOctaves,
+                                this.cloudPersistence
+                            );
+                            if (cloudVal > this.cloudThreshold) {
+                                voxelType = VoxelType.Vapor;
+                            }
+                        }
+                    }
+
+                    voxels[index] = voxelType;
+                }
+            }
+        }
+
+        // Second pass: Generate cave systems
+        this.generateCaveSystem(chunkPos, voxels);
+
+        // Third pass: Generate lava systems (only after caves are carved)
+        this.generateLavaSystem(chunkPos, voxels);
+
+        return voxels;
+    }
+
+    generateCaveSystem(chunkPos, voxels) {
+        for (let x = 0; x < CHUNK_SIZE; x++) {
+            for (let y = 0; y < CHUNK_SIZE; y++) {
+                for (let z = 0; z < CHUNK_SIZE; z++) {
+                    const worldX = chunkPos.x * CHUNK_SIZE + x;
+                    const worldY = chunkPos.y * CHUNK_SIZE + y;
+                    const worldZ = chunkPos.z * CHUNK_SIZE + z;
+
+                    const index = x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE;
+                    const currentVoxel = voxels[index];
+
+                    // Only carve caves in solid rock between min and max depths
+                    if (currentVoxel === VoxelType.Rock &&
+                        worldY >= this.minCaveDepth &&
+                        worldY <= this.maxCaveDepth) {
+
+                        // FIXED: Use absolute value of noise for more consistent cave generation
+                        const caveValue = Math.abs(this.caveNoise.noise(
+                            worldX * this.caveScale,
+                            worldY * this.caveScale * 0.5, // Stretch caves vertically
+                            worldZ * this.caveScale,
+                            this.caveOctaves,
+                            this.cavePersistence
+                        ));
+
+                        // FIXED: More aggressive cave carving
+                        if (caveValue > this.caveThreshold) {
+                            voxels[index] = VoxelType.Air;
+
+                            // Also carve surrounding voxels to make caves larger
+                            for (let dx = -1; dx <= 1; dx++) {
+                                for (let dy = -1; dy <= 1; dy++) {
+                                    for (let dz = -1; dz <= 1; dz++) {
+                                        if (Math.random() < 0.3) { // 30% chance to expand
+                                            const nx = x + dx, ny = y + dy, nz = z + dz;
+                                            if (nx >= 0 && nx < CHUNK_SIZE &&
+                                                ny >= 0 && ny < CHUNK_SIZE &&
+                                                nz >= 0 && nz < CHUNK_SIZE) {
+                                                const nIndex = nx + ny * CHUNK_SIZE + nz * CHUNK_SIZE * CHUNK_SIZE;
+                                                if (voxels[nIndex] === VoxelType.Rock) {
+                                                    voxels[nIndex] = VoxelType.Air;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Generate cave entrances (separate from main cave generation)
+                    if (worldY >= this.minCaveDepth - 5 && worldY <= this.minCaveDepth + 5) {
+                        const terrainHeight = this.calculateTerrainHeightAt(worldX, worldZ);
+
+                        // Only create entrances on dry land above water
+                        if (terrainHeight > this.waterLevel && currentVoxel === VoxelType.Rock) {
+                            const entranceValue = this.caveEntranceNoise.noise(
+                                worldX * this.caveEntranceScale,
+                                worldZ * this.caveEntranceScale,
+                                0,
+                                2,
+                                0.5
+                            );
+
+                            if (entranceValue > this.caveEntranceThreshold) {
+                                this.createCaveEntrance(chunkPos, voxels, x, y, z);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    generateLavaSystem(chunkPos, voxels) {
+        // FIXED: Only generate lava deep underground in existing caves
+        for (let x = 0; x < CHUNK_SIZE; x++) {
+            for (let y = 0; y < CHUNK_SIZE; y++) {
+                for (let z = 0; z < CHUNK_SIZE; z++) {
+                    const worldX = chunkPos.x * CHUNK_SIZE + x;
+                    const worldY = chunkPos.y * CHUNK_SIZE + y;
+                    const worldZ = chunkPos.z * CHUNK_SIZE + z;
+
+                    const index = x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE;
+
+                    if (worldY >= this.lavaMinDepth && worldY <= this.lavaMaxDepth &&
+                        voxels[index] === VoxelType.Air) {
+
+                        // Additional safety check: ensure we're below terrain
+                        const terrainHeight = this.calculateTerrainHeightAt(worldX, worldZ);
+                        if (worldY >= terrainHeight) continue; // Skip if above ground
+
+                        const lavaValue = Math.abs(this.lavaNoise.noise(
+                            worldX * this.lavaScale,
+                            worldY * this.lavaScale,
+                            worldZ * this.lavaScale,
+                            this.lavaOctaves,
+                            this.lavaPersistence
+                        ));
+
+                        if (lavaValue > this.lavaThreshold) {
+                            // Place lava pool at the bottom of caves
+                            if (y > 0) {
+                                const belowIndex = x + (y-1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE;
+                                if (voxels[belowIndex] === VoxelType.Rock) {
+                                    this.createLavaPool(chunkPos, voxels, x, y, z);
+                                }
+                            }
+
+                            // Create lava waterfalls
+                            if (Math.random() < this.lavaFlowChance) {
+                                this.createLavaWaterfall(chunkPos, voxels, x, y, z);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    createCaveEntrance(chunkPos, voxels, x, y, z) {
+        // Create a vertical shaft entrance
+        const entranceSize = this.caveEntranceMinSize +
+            Math.floor(Math.random() * (this.caveEntranceMaxSize - this.caveEntranceMinSize));
+
+        const radius = Math.floor(entranceSize / 2);
+
+        for (let dx = -radius; dx <= radius; dx++) {
+            for (let dz = -radius; dz <= radius; dz++) {
+                const dist = Math.sqrt(dx*dx + dz*dz);
+                if (dist <= radius) {
+                    const targetX = x + dx;
+                    const targetZ = z + dz;
+
+                    if (targetX >= 0 && targetX < CHUNK_SIZE && targetZ >= 0 && targetZ < CHUNK_SIZE) {
+                        // Carve downward to connect with caves
+                        for (let targetY = y; targetY < Math.min(CHUNK_SIZE, y + 20); targetY++) {
+                            const index = targetX + targetY * CHUNK_SIZE + targetZ * CHUNK_SIZE * CHUNK_SIZE;
+
+                            // Only carve through rock, stop if we hit air (cave)
+                            if (voxels[index] === VoxelType.Rock) {
+                                voxels[index] = VoxelType.Air;
+                            } else if (voxels[index] === VoxelType.Air) {
+                                break; // Connected to cave
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    createLavaPool(chunkPos, voxels, x, y, z) {
+        const poolRadius = this.lavaRiverWidth;
+
+        for (let dx = -poolRadius; dx <= poolRadius; dx++) {
+            for (let dz = -poolRadius; dz <= poolRadius; dz++) {
+                const dist = Math.sqrt(dx*dx + dz*dz);
+                if (dist <= poolRadius) {
+                    const targetX = x + dx;
+                    const targetZ = z + dz;
+
+                    if (targetX >= 0 && targetX < CHUNK_SIZE && targetZ >= 0 && targetZ < CHUNK_SIZE) {
+                        const index = targetX + y * CHUNK_SIZE + targetZ * CHUNK_SIZE * CHUNK_SIZE;
+
+                        if (voxels[index] === VoxelType.Air) {
+                            voxels[index] = VoxelType.Lava;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    createLavaWaterfall(chunkPos, voxels, x, y, z) {
+        let currentY = y;
+        let flowLength = 0;
+        const maxFlowLength = 12;
+
+        while (currentY > 0 && flowLength < maxFlowLength) {
+            const index = x + currentY * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE;
+
+            if (voxels[index] === VoxelType.Rock) break;
+
+            voxels[index] = VoxelType.Lava;
+
+            // Horizontal spread
+            if (Math.random() < 0.2) {
+                for (let dx = -1; dx <= 1; dx += 2) {
+                    const targetX = x + dx;
+                    if (targetX >= 0 && targetX < CHUNK_SIZE) {
+                        const spreadIndex = targetX + currentY * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE;
+                        if (voxels[spreadIndex] === VoxelType.Air) {
+                            voxels[spreadIndex] = VoxelType.Lava;
+                        }
+                    }
+                }
+                for (let dz = -1; dz <= 1; dz += 2) {
+                    const targetZ = z + dz;
+                    if (targetZ >= 0 && targetZ < CHUNK_SIZE) {
+                        const spreadIndex = x + currentY * CHUNK_SIZE + targetZ * CHUNK_SIZE * CHUNK_SIZE;
+                        if (voxels[spreadIndex] === VoxelType.Air) {
+                            voxels[spreadIndex] = VoxelType.Lava;
+                        }
+                    }
+                }
+            }
+
+            currentY--;
+            flowLength++;
+        }
+    }
+
+    calculateTerrainHeightAt(worldX, worldZ) {
+        const transitionValue = this.transitionNoise.noise(
+            worldX * this.transitionScale,
+            worldZ * this.transitionScale,
+            0,
+            2,
+            0.5
+        );
+
+        let transitionFactor = (transitionValue + 1) / 2;
+        transitionFactor = Math.pow(transitionFactor, 2);
+
+        const hillsHeight = this.hillsNoise.noise(
+            worldX * this.hillsScale,
+            worldZ * this.hillsScale,
+            0,
+            this.hillsOctaves,
+            this.hillsPersistence
+        ) * this.hillsAmplitude + this.seaLevel;
+
+        const mountainsHeight = this.mountainsNoise.noise(
+            worldX * this.mountainsScale,
+            worldZ * this.mountainsScale,
+            0,
+            this.mountainsOctaves,
+            this.mountainsPersistence
+        ) * this.mountainsAmplitude + this.seaLevel;
+
+        const terrainHeight = hillsHeight * (1 - transitionFactor) + mountainsHeight * transitionFactor;
+        return Math.round(terrainHeight);
+    }
+
+    generateCrossChunkFeatures(world) {
+        // Define placement parameters
+        const WATER_BONUS_RADIUS = 20;
+
+        // Create noise generators for organic placement
+        const treePlacementNoise = new PerlinNoise(this.worldSeed + 10000);
+        const bushPlacementNoise = new PerlinNoise(this.worldSeed + 20000);
+
+        // Get world bounds from world size
+        const halfX = Math.floor(this.worldSize.x / 2);
+        const halfZ = Math.floor(this.worldSize.z / 2);
+
+        // Generate trees and bushes across the world surface using noise-based placement
+        for (let x = -halfX; x <= halfX; x++) {
+            for (let z = -halfZ; z <= halfZ; z++) {
+                // Use noise to determine if we should consider this spot
+                const treeNoiseValue = treePlacementNoise.noise(x * 0.1, z * 0.1, 0, 2, 0.5);
+                const bushNoiseValue = bushPlacementNoise.noise(x * 0.15, z * 0.15, 0, 2, 0.5);
+
+                // Only consider spots where noise value exceeds threshold (creates organic clusters)
+                const shouldConsiderTree = (treeNoiseValue + 1) / 2 > 0.70; // ~20% of spots considered
+                const shouldConsiderBush = (bushNoiseValue + 1) / 2 > 0.70; // ~30% of spots considered
+
+                if (!shouldConsiderTree && !shouldConsiderBush) continue;
+
+                // Find surface height
+                let surfaceY = 0;
+                for (let y = 30; y >= -30; y--) {
+                    if (world.getVoxel(new Vec3(x, y, z)) !== VoxelType.Air) {
+                        surfaceY = y + 1;
+                        break;
+                    }
+                }
+
+                // Skip if no surface found or below water
+                if (surfaceY === 0 || surfaceY <= this.waterLevel) continue;
+
+                const surfacePos = new Vec3(x, surfaceY, z);
+                const surfaceVoxel = world.getVoxel(new Vec3(x, surfaceY - 1, z));
+
+                // Only place on ground, not on rock
+                if (surfaceVoxel !== VoxelType.Ground) continue;
+
+                // Calculate terrain characteristics for this area
+                const flatness = this.calculateAreaFlatness(world, x, z, 10);
+                const mountaininess = 1 - flatness;
+                const hasWaterNearby = this.hasWaterNearby(world, x, surfaceY, z, WATER_BONUS_RADIUS);
+
+                // Determine placement probabilities based on noise and terrain
+                let treeProbability = 0;
+                let bushProbability = 0;
+
+                if (shouldConsiderTree) {
+                    treeProbability = 0.6 * flatness; // More trees on flat areas
+                    if (hasWaterNearby) treeProbability += 0.3;
+                    // Use noise to add variation to probability
+                    treeProbability *= (treeNoiseValue + 1) / 2;
+                }
+
+                if (shouldConsiderBush) {
+                    bushProbability = 0.7 * mountaininess; // More bushes on mountainous areas
+                    if (hasWaterNearby) bushProbability += 0.2;
+                    // Use noise to add variation to probability
+                    bushProbability *= (bushNoiseValue + 1) / 2;
+                }
+
+                // Place tree if probability check passes
+                if (shouldConsiderTree && Math.random() < treeProbability) {
+                    const treePreset = TREE_PRESETS[Math.floor(Math.random() * TREE_PRESETS.length)];
+                    TerrainSystem.placePresetOnSurface(world, treePreset, surfacePos);
+                }
+
+                // Place bush if probability check passes (can place alongside trees)
+                if (shouldConsiderBush && Math.random() < bushProbability) {
+                    const bushPreset = BUSH_PRESETS[Math.floor(Math.random() * BUSH_PRESETS.length)];
+                    TerrainSystem.placePresetOnSurface(world, bushPreset, surfacePos);
+                }
+            }
+        }
+    }
+
+    // Helper method to calculate flatness of an area
+    calculateAreaFlatness(world, centerX, centerZ, radius) {
+        let heightSum = 0;
+        let heightSamples = 0;
+        const heights = [];
+
+        // Sample heights in the area
+        for (let x = centerX - radius; x <= centerX + radius; x += 3) {
+            for (let z = centerZ - radius; z <= centerZ + radius; z += 3) {
+                for (let y = 30; y >= -30; y--) {
+                    if (world.getVoxel(new Vec3(x, y, z)) !== VoxelType.Air) {
+                        heights.push(y);
+                        heightSum += y;
+                        heightSamples++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (heightSamples < 4) return 0.5; // Default if not enough samples
+
+        // Calculate standard deviation of heights
+        const mean = heightSum / heightSamples;
+        let variance = 0;
+        for (const height of heights) {
+            variance += Math.pow(height - mean, 2);
+        }
+        variance /= heightSamples;
+        const stdDev = Math.sqrt(variance);
+
+        // Convert to flatness score (0-1), where 1 is perfectly flat
+        const maxExpectedDeviation = 15; // Maximum expected height variation
+        return Math.max(0, 1 - (stdDev / maxExpectedDeviation));
+    }
+
+    // Helper method to check for water nearby
+    hasWaterNearby(world, x, y, z, radius) {
+        for (let dx = -radius; dx <= radius; dx += 4) {
+            for (let dz = -radius; dz <= radius; dz += 4) {
+                const checkPos = new Vec3(x + dx, y, z + dz);
+                // Check multiple heights around the search position
+                for (let checkY = y - 5; checkY <= y + 2; checkY++) {
+                    if (world.getVoxel(new Vec3(x + dx, checkY, z + dz)) === VoxelType.Water) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+}
+
+// Start the game when the page loads
+window.addEventListener('load', () => {
+    const game = new Game();
+    game.start();
+});
+    </script>
+</body>
+</html>
