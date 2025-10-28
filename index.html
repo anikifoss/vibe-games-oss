@@ -82,6 +82,18 @@
             color: var(--primary);
         }
 
+        .github-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .github-link:hover {
+            color: var(--secondary);
+            text-decoration: underline;
+        }
+
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -216,7 +228,7 @@
         <section class="intro">
             <h2>Where AI Meets Play</h2>
             <p>Welcome to Vibe-Games-Oss, a collection of gaming experiences crafted through the mysterious process of "vibe-coding" with artificial intelligence. Each game represents a step forward in AI's creative capabilities—monitoring our own obsolescence has never been so entertaining.</p>
-            <p><a href="https://github.com/anikifoss/vibe-games-oss">Github</a></p>
+            <p><a href="https://github.com/anikifoss/vibe-games-oss" class="github-link">Github</a></p>
         </section>
 
         <section class="games-grid">
