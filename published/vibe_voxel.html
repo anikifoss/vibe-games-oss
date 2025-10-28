@@ -2866,7 +2866,7 @@ class VoxelInteractionSystem {
     }
 
     markAffectedChunksAsDirty(dirtyChunks) {
-        for (chunk of dirtyChunks) {
+        for (const chunk of dirtyChunks) {
             this.visibilityManagement.markDirty(chunk);
         }
     }
