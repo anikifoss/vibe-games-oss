@@ -43,14 +43,16 @@
         }
 
         canvas {
-            border: 2px solid var(--neon-cyan);
+            display: block;
             image-rendering: pixelated;
-            image-rendering: crisp-edges;
+            position: relative;
+            z-index: 2;
+        }
+        #canvas-border {
+            border: 2px solid var(--neon-cyan);
             box-shadow:
                 0 0 20px rgba(0, 255, 255, 0.3),
                 inset 0 0 32px rgba(0, 255, 255, 0.06);
-            position: relative;
-            z-index: 2;
         }
 
         /* Upgraded UI panel with a neon chassis look */
@@ -372,7 +374,9 @@
         </div>
     </div>
 
-    <canvas id="gameCanvas" width="800" height="608"></canvas>
+    <div id="canvas-border">
+        <canvas id="gameCanvas" width="800" height="608"></canvas>
+    </div>
 
     <div class="controls">
         <p>Arrow Keys or WASD: Move | Space: Place Bomb | X or M: Remote Detonate | R: Restart</p>
@@ -649,11 +653,24 @@
                 this.keys = new Set();
                 this.keyPressed = new Set();
                 this.mousePosition = { x: 0, y: 0 };
+                // Keys that cause page scroll we want to handle ourselves
+                this._preventDefaultCodes = new Set([
+                    'Space',
+                    'ArrowUp',
+                    'ArrowDown',
+                    'ArrowLeft',
+                    'ArrowRight'
+                ]);
                 this.setupEventListeners();
             }
 
             setupEventListeners() {
                 document.addEventListener('keydown', (e) => {
+                    // Block browser scroll/hyperkey behavior when we intend to use the key
+                    if (this._preventDefaultCodes.has(e.code)) {
+                        e.preventDefault();
+                    }
+
                     if (!this.keys.has(e.code)) {
                         this.keyPressed.add(e.code);
                     }
@@ -3259,8 +3276,15 @@
         class Game {
             constructor() {
                 this.fpsSmoothed = 60;
+
                 this.canvas = document.getElementById('gameCanvas');
                 this.ctx = this.canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width * dpr;
+                this.canvas.height = rect.height * dpr;
+                this.ctx.scale(dpr, dpr);
+
                 this.inputSystem = new InputSystem();
                 this.audioSystem = new AudioSystem();
                 this.whisperSystem = new WhisperSystem();
