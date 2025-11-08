@@ -20,9 +20,12 @@
         #game-container {
             position: relative;
         }
-        #game-canvas {
+        #game-canvas-border {
             border: 4px solid #4a4a4a;
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        #game-canvas {
+            display: block;
             cursor: none;
         }
         #ui-overlay {
@@ -195,7 +198,9 @@
 </head>
 <body>
     <div id="game-container">
-        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <div id="game-canvas-border">
+            <canvas id="game-canvas" width="800" height="600"></canvas>
+        </div>
         <div id="ui-overlay">
             <div>SCORE: <span id="score">0</span></div>
             <div>HEALTH: <span id="health">100</span></div>
@@ -659,6 +664,11 @@
         // Canvas and Context
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
 
         // Input Handling
         let mouseX = CANVAS_WIDTH / 2;
